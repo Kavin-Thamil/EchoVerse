@@ -14,11 +14,24 @@
                     Upload New Track
                 </h1>
 
+                <p class="text-center text-muted mb-4">
+                    Share your royalty-free music with the EchoVerse community.
+                </p>
+
                 <form
                     method="post"
                     enctype="multipart/form-data"
+                    novalidate
                 >
                     {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
                     {% for field in form %}
 
@@ -34,31 +47,38 @@
                             {{ field }}
 
                             {% if field.help_text %}
-
                                 <div class="form-text">
                                     {{ field.help_text }}
                                 </div>
-
                             {% endif %}
 
                             {% for error in field.errors %}
-
                                 <div class="text-danger small mt-1">
                                     {{ error }}
                                 </div>
-
                             {% endfor %}
 
                         </div>
 
                     {% endfor %}
 
-                    <button
-                        type="submit"
-                        class="btn btn-primary w-100 py-2 fw-semibold"
-                    >
-                        Upload Song
-                    </button>
+                    <div class="d-grid gap-2">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary py-2 fw-semibold"
+                        >
+                            Upload Song
+                        </button>
+
+                        <a
+                            href="{% url 'home' %}"
+                            class="btn btn-outline-light"
+                        >
+                            Cancel
+                        </a>
+
+                    </div>
 
                 </form>
 

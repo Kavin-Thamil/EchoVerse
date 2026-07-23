@@ -23,27 +23,36 @@ class SongForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Enter song title",
+                    "maxlength": 200,
+                    "autocomplete": "off",
                 }
             ),
             "artist": forms.TextInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "Enter artist name",
+                    "maxlength": 200,
+                    "autocomplete": "off",
                 }
             ),
-            "genre": forms.Select(
+            "genre": forms.TextInput(
                 attrs={
-                    "class": "form-select",
+                    "class": "form-control",
+                    "placeholder": "e.g. Ambient, Synthwave, Lo-fi",
+                    "maxlength": 100,
+                    "autocomplete": "off",
                 }
             ),
             "cover_image": forms.ClearableFileInput(
                 attrs={
                     "class": "form-control",
+                    "accept": "image/*",
                 }
             ),
             "audio_file": forms.ClearableFileInput(
                 attrs={
                     "class": "form-control",
+                    "accept": ".mp3,.wav,.ogg,audio/*",
                 }
             ),
         }
@@ -57,12 +66,11 @@ class SongForm(forms.ModelForm):
         }
 
         help_texts = {
-            "cover_image": (
-                "Upload a square image for the best appearance."
-            ),
-            "audio_file": (
-                "Supported formats: MP3, WAV, OGG."
-            ),
+            "title": "Choose a clear, descriptive title.",
+            "artist": "Name of the artist or creator.",
+            "genre": "Examples: Ambient, Lo-fi, Orchestral, Synthwave.",
+            "cover_image": "Recommended: square image (1000×1000 or larger).",
+            "audio_file": "Supported formats: MP3, WAV, OGG.",
         }
 
 
@@ -74,6 +82,7 @@ class RegisterForm(UserCreationForm):
             attrs={
                 "class": "form-control",
                 "placeholder": "Enter username",
+                "autocomplete": "username",
             }
         )
     )
@@ -83,6 +92,7 @@ class RegisterForm(UserCreationForm):
             attrs={
                 "class": "form-control",
                 "placeholder": "Enter email",
+                "autocomplete": "email",
             }
         )
     )
@@ -92,6 +102,7 @@ class RegisterForm(UserCreationForm):
             attrs={
                 "class": "form-control",
                 "placeholder": "Enter password",
+                "autocomplete": "new-password",
             }
         )
     )
@@ -101,6 +112,7 @@ class RegisterForm(UserCreationForm):
             attrs={
                 "class": "form-control",
                 "placeholder": "Confirm password",
+                "autocomplete": "new-password",
             }
         )
     )

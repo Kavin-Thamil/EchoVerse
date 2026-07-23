@@ -47,6 +47,42 @@ def home(request):
     )
 
 
+def search_songs(request):
+    """Return songs as JSON for AJAX search."""
+
+    songs = Song.objects.all()
+
+    search_query = request.GET.get("search")
+    selected_genre = request.GET.get("genre")
+
+    if selected_genre:
+        songs = songs.filter(
+            genre__iexact=selected_genre
+        )
+
+    if search_query:
+        songs = songs.filter(
+            title__icontains=search_query
+        )
+
+    data = [
+        {
+            "id": song.id,
+            "title": song.title,
+            "genre": song.genre,
+            "cover_image": song.cover_image.url,
+            "audio_file": song.audio_file.url,
+        }
+        for song in songs
+    ]
+
+    return JsonResponse(
+        {
+            "songs": data,
+        }
+    )
+
+
 @login_required
 def upload_song(request):
     """Upload a new song."""
