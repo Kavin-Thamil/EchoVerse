@@ -1,32 +1,49 @@
-{% extends 'echo/base.html' %}
+{% extends "echo/base.html" %}
+
+{% block title %}Register | EchoVerse{% endblock %}
+
 {% block content %}
 
-<div class="auth-section">
-    <div class="auth-card">
-        <h2 class="mb-4 text-center">
-            Create Account
-        </h2>
-        <form method="POST">
+<main>
+    <section class="auth-section">
 
-            {% csrf_token %}
+        <div class="auth-card">
 
-            <div class="mb-3">
-                {{ form.username }}
-            </div>
-            <div class="mb-3">
-                {{ form.email }}
-            </div>
-            <div class="mb-3">
-                {{ form.password1 }}
-            </div>
-            <div class="mb-4">
-                {{ form.password2 }}
-            </div>
-            <button type="submit" class="btn btn-primary w-100">
-                Register
-            </button>
-        </form>
-    </div>
-</div>
+            <h2 class="mb-4 text-center">
+                Create Account
+            </h2>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    {{ form.username }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.email }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.password1 }}
+                </div>
+
+                <div class="mb-4">
+                    {{ form.password2 }}
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary w-100"
+                >
+                    Register
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+</main>
 
 {% endblock %}

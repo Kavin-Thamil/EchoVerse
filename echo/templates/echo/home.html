@@ -1,92 +1,158 @@
-{% extends 'echo/base.html' %}
+{% extends "echo/base.html" %}
+
+{% block title %}Home | EchoVerse{% endblock %}
+
 {% block content %}
 
+<!-- Hero Section -->
 <section class="hero-section">
     <div class="container text-center">
+
         <h1 class="display-3 fw-bold">
             Discover Royalty-Free Music
         </h1>
+
         <p class="lead mt-3">
             Stream, upload, and explore immersive soundscapes.
         </p>
+
+        <!-- Search -->
         <form
-            method="GET"
-            action="/"
-            class="mt-4">
+            method="get"
+            action="{% url 'home' %}"
+            class="mt-4"
+        >
             <div class="d-flex justify-content-center">
+
                 <input
                     type="search"
                     name="search"
                     class="form-control w-50"
                     placeholder="Search tracks..."
-                    value="{{ search_query|default:'' }}">
+                    value="{{ search_query|default:'' }}"
+                >
+
+                {% if selected_genre %}
+                    <input
+                        type="hidden"
+                        name="genre"
+                        value="{{ selected_genre }}"
+                    >
+                {% endif %}
+
                 <button
                     type="submit"
-                    class="btn btn-primary ms-2">
+                    class="btn btn-primary ms-2"
+                >
                     Search
                 </button>
+
             </div>
         </form>
+
         <a
             href="#trending"
-            class="btn btn-primary btn-lg mt-4">
+            class="btn btn-primary btn-lg mt-4"
+        >
             Explore Music
         </a>
+
     </div>
 </section>
+
+
+<!-- Songs -->
 <section id="trending" class="songs-section">
     <div class="container">
+
         <h2 class="section-title">
             Trending Tracks
         </h2>
+
+        <!-- Genre Filters -->
         <div class="genre-filters mb-4">
-            <a href="/" class="btn btn-sm {% if not selected_genre %}btn-primary{% else %}btn-outline-light{% endif %}">
+
+            <a
+                href="{% url 'home' %}"
+                class="btn btn-sm {% if not selected_genre %}btn-primary{% else %}btn-outline-light{% endif %}"
+            >
                 All
             </a>
 
-        {% for genre in genres %}
+            {% for genre in genres %}
 
-            <a href="/?genre={{ genre }}"
-            class="btn btn-sm {% if selected_genre == genre %}btn-primary{% else %}btn-outline-light{% endif %}">
-                {{ genre }}
-            </a>
-
-        {% endfor %}
-
-        </div>
-        <div class="row g-4">
-
-        {% if songs %}
-        {% for song in songs %}
-
-            <div class="col-md-4">
-                <a href="{% url 'song_detail' song.id %}" class="text-decoration-none text-white">
-                    <div class="music-card">
-                        <img src="{{ song.cover_image.url }}" class="img-fluid">
-                        <div class="p-3">
-                            <h4>{{ song.title }}</h4>
-                            <p>{{ song.genre }}</p>
-                            <audio controls class="w-100">
-                                <source src="{{ song.audio_file.url }}">
-                            </audio>
-                        </div>
-                    </div>
+                <a
+                    href="{% url 'home' %}?genre={{ genre }}"
+                    class="btn btn-sm {% if selected_genre == genre %}btn-primary{% else %}btn-outline-light{% endif %}"
+                >
+                    {{ genre }}
                 </a>
-            </div>
 
             {% endfor %}
-            {% else %}
-
-            <div class="col-12 text-center py-5">
-                <h3>No songs found 🎵</h3>
-                <p class="text-muted">
-                    Try another genre or upload some music.
-                </p>
-            </div>
-
-        {% endif %}
 
         </div>
+
+
+        <div class="row g-4">
+
+            {% if songs %}
+
+                {% for song in songs %}
+
+                    <div class="col-md-4">
+
+                        <a
+                            href="{% url 'song_detail' song.id %}"
+                            class="text-decoration-none text-white"
+                        >
+
+                            <article class="music-card">
+
+                                <img
+                                    src="{{ song.cover_image.url }}"
+                                    alt="{{ song.title }} Cover"
+                                    class="img-fluid"
+                                >
+
+                                <div class="p-3">
+
+                                    <h4>{{ song.title }}</h4>
+
+                                    <p>{{ song.genre }}</p>
+
+                                    <audio controls class="w-100">
+                                        <source
+                                            src="{{ song.audio_file.url }}"
+                                        >
+                                        Your browser does not support the audio element.
+                                    </audio>
+
+                                </div>
+
+                            </article>
+
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="col-12 text-center py-5">
+
+                    <h3>No songs found 🎵</h3>
+
+                    <p class="text-muted">
+                        Try another genre or upload some music.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
     </div>
 </section>
 

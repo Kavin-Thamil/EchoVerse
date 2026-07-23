@@ -5,79 +5,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EchoVerse</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'echo/css/style.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <title>{% block title %}EchoVerse{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+        crossorigin="anonymous"
+    >
+
+    <!-- Custom Styles -->
+    <link
+        rel="stylesheet"
+        href="{% static 'echo/css/style.css' %}"
+    >
 </head>
+
 <body>
+
+    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark py-3">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="/">
-            EchoVerse
-        </a>
-        <button class="navbar-toggler"
+        <div class="container">
+
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+                EchoVerse
+            </a>
+
+            <button
+                class="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            
-            <ul class="navbar-nav ms-auto">
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                {% if user.is_authenticated %}
-                
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        Hello, {{ user.username }}
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/upload">
-                        Upload
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/my-uploads">
-                        My Uploads
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/my-favorites">
-                        Favorites
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">
-                        Logout
-                    </a>
-                </li>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
 
-                {% else %}
+                    {% if user.is_authenticated %}
 
-                <li class="nav-item">
-                    <a class="nav-link" href="/login">
-                        Login
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/register">
-                        Register
-                    </a>
-                </li>
+                        <li class="nav-item">
+                            <span class="nav-link">
+                                Hello, {{ user.username }}
+                            </span>
+                        </li>
 
-                {% endif %}
-            </ul>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'upload_song' %}">
+                                Upload
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'my_uploads' %}">
+                                My Uploads
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'my_favorites' %}">
+                                Favorites
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                Logout
+                            </a>
+                        </li>
+
+                    {% else %}
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                Login
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                Register
+                            </a>
+                        </li>
+
+                    {% endif %}
+
+                </ul>
+            </div>
+
         </div>
-    </div>
-</nav>
+    </nav>
 
-{% block content %}
-{% endblock %}
+    <!-- Page Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'echo/js/favorites.js' %}"></script>
+
+    <!-- Bootstrap JavaScript -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"
+    ></script>
 
 </body>
 </html>

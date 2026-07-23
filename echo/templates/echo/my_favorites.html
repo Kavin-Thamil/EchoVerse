@@ -1,43 +1,73 @@
-{% extends 'echo/base.html' %}
+{% extends "echo/base.html" %}
+
+{% block title %}My Favorites | EchoVerse{% endblock %}
+
 {% block content %}
 
-<section class="songs-section">
-    <div class="container">
-        <h1 class="mb-3">
-            My Favorites
-        </h1>
-        <p class="text-muted mb-5">
-            Songs you've liked
-        </p>
-        <div class="row g-4">
-            {% for song in songs %}
-            <div class="col-md-4">
-                <a
-                    href="{% url 'song_detail' song.id %}"
-                    class="text-decoration-none text-white">
-                    <div class="music-card">
-                        <img
-                            src="{{ song.cover_image.url }}"
-                            class="img-fluid">
-                        <div class="p-3">
-                            <h4>{{ song.title }}</h4>
-                            <p>{{ song.genre }}</p>
-                        </div>
+<main>
+    <section class="songs-section">
+        <div class="container">
+
+            <h1 class="mb-3">
+                My Favorites
+            </h1>
+
+            <p class="text-muted mb-5">
+                Songs you've liked.
+            </p>
+
+            <div class="row g-4">
+
+                {% for song in songs %}
+
+                    <div class="col-md-4">
+
+                        <a
+                            href="{% url 'song_detail' song.id %}"
+                            class="text-decoration-none text-white"
+                        >
+
+                            <article class="music-card">
+
+                                <img
+                                    src="{{ song.cover_image.url }}"
+                                    alt="{{ song.title }} Cover"
+                                    class="img-fluid"
+                                >
+
+                                <div class="p-3">
+                                    <h4>{{ song.title }}</h4>
+                                    <p>{{ song.genre }}</p>
+                                </div>
+
+                            </article>
+
+                        </a>
+
                     </div>
-                </a>
+
+                {% empty %}
+
+                    <div class="col-12 text-center">
+
+                        <div class="auth-card">
+
+                            <h4>No favorite songs yet ❤️</h4>
+
+                            <p class="text-muted">
+                                Start exploring and save songs you like.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
             </div>
-            {% empty %}
-            <div class="col-12 text-center">
-                <div class="auth-card">
-                    <h4>No favorite songs yet ❤️</h4>
-                    <p class="text-muted">
-                        Start exploring and save songs you like.
-                    </p>
-                </div>
-            </div>
-            {% endfor %}
+
         </div>
-    </div>
-</section>
+    </section>
+</main>
 
 {% endblock %}

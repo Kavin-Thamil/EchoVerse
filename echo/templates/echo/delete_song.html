@@ -1,29 +1,44 @@
-{% extends 'echo/base.html' %}
+{% extends "echo/base.html" %}
+
+{% block title %}Delete Song | EchoVerse{% endblock %}
+
 {% block content %}
 
-<section class="auth-section">
-    <div class="auth-card text-center">
-        <h2 class="mb-4">
-            Delete Song
-        </h2>
-        <p class="mb-4">
-            Are you sure you want to delete
-            <strong>{{ song.title }}</strong>?
-        </p>
-        <form method="POST">
-            {% csrf_token %}
-            <button
-                type="submit"
-                class="btn btn-danger me-2">
-                Delete
-            </button>
-            <a
-                href="{% url 'song_detail' song.id %}"
-                class="btn btn-outline-light">
-                Cancel
-            </a>
-        </form>
-    </div>
-</section>
+<main>
+    <section class="auth-section">
+
+        <div class="auth-card text-center">
+
+            <h2 class="mb-4">
+                Delete Song
+            </h2>
+
+            <p class="mb-4">
+                Are you sure you want to delete
+                <strong>{{ song.title }}</strong>?
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="btn btn-danger me-2"
+                >
+                    Delete
+                </button>
+
+                <a
+                    href="{% url 'song_detail' song.id %}"
+                    class="btn btn-outline-light"
+                >
+                    Cancel
+                </a>
+            </form>
+
+        </div>
+
+    </section>
+</main>
 
 {% endblock %}

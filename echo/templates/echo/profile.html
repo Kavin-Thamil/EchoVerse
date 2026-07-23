@@ -1,48 +1,87 @@
-{% extends 'echo/base.html' %}
+{% extends "echo/base.html" %}
+
+{% block title %}{{ profile_user.username }} | EchoVerse{% endblock %}
+
 {% block content %}
 
-<section class="songs-section">
-    <div class="container">
-        <div class="auth-card text-center mb-5">
-            <h1 class="display-6 fw-bold mb-3">
-                {{ profile_user.username }}
-            </h1>
-            <p class="fs-5 mt-3">
-                🎵 Songs Uploaded:
-                {{ user_songs.count }}
-            </p>
-        </div>
-        <h2 class="section-title mb-4">
-            Uploaded Songs
-        </h2>
-        <div class="row g-4">
-            {% for song in user_songs %}
-            <div class="col-md-4">
-                <a href="{% url 'song_detail' song.id %}"
-                   class="text-decoration-none text-white">
-                    <div class="music-card">
-                        <img
-                            src="{{ song.cover_image.url }}"
-                            class="img-fluid">
-                        <div class="p-3">
-                            <h4>{{ song.title }}</h4>
-                            <p>{{ song.genre }}</p>
-                        </div>
+<main>
+    <section class="songs-section">
+        <div class="container">
+
+            <!-- Profile Summary -->
+            <div class="auth-card text-center mb-5">
+
+                <h1 class="display-6 fw-bold mb-3">
+                    {{ profile_user.username }}
+                </h1>
+
+                <p class="fs-5 mt-3">
+                    🎵 Songs Uploaded:
+                    {{ user_songs.count }}
+                </p>
+
+            </div>
+
+            <!-- Uploaded Songs -->
+            <h2 class="section-title mb-4">
+                Uploaded Songs
+            </h2>
+
+            <div class="row g-4">
+
+                {% for song in user_songs %}
+
+                    <div class="col-md-4">
+
+                        <a
+                            href="{% url 'song_detail' song.id %}"
+                            class="text-decoration-none text-white"
+                        >
+
+                            <article class="music-card">
+
+                                <img
+                                    src="{{ song.cover_image.url }}"
+                                    alt="{{ song.title }} Cover"
+                                    class="img-fluid"
+                                >
+
+                                <div class="p-3">
+
+                                    <h4>{{ song.title }}</h4>
+
+                                    <p>{{ song.genre }}</p>
+
+                                </div>
+
+                            </article>
+
+                        </a>
+
                     </div>
-                </a>
+
+                {% empty %}
+
+                    <div class="col-12 text-center">
+
+                        <div class="auth-card">
+
+                            <h4>No songs uploaded yet 🎵</h4>
+
+                            <p class="text-muted">
+                                Nothing to see here... yet.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
             </div>
-            {% empty %}
-            <div class="col-12 text-center">
-                <div class="auth-card">
-                    <h4>No songs uploaded yet 🎵</h4>
-                    <p class="text-muted">
-                        Nothing to see here... yet.
-                    </p>
-                </div>
-            </div>
-            {% endfor %}
+
         </div>
-    </div>
-</section>
+    </section>
+</main>
 
 {% endblock %}

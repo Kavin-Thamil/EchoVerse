@@ -1,21 +1,71 @@
-{% extends 'echo/base.html' %}
+{% extends "echo/base.html" %}
+
+{% block title %}Upload Song | EchoVerse{% endblock %}
+
 {% block content %}
 
-<section class="songs-section">
-    <div class="container">
-        <div class="auth-card mx-auto">
-            <h1 class="text-center mb-4">
-                Upload New Track
-            </h1>
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button class="btn btn-primary w-100">
-                    Upload Song
-                </button>
-            </form>
+<main>
+    <section class="songs-section">
+        <div class="container">
+
+            <div class="auth-card mx-auto">
+
+                <h1 class="text-center mb-4">
+                    Upload New Track
+                </h1>
+
+                <form
+                    method="post"
+                    enctype="multipart/form-data"
+                >
+                    {% csrf_token %}
+
+                    {% for field in form %}
+
+                        <div class="mb-3">
+
+                            <label
+                                for="{{ field.id_for_label }}"
+                                class="form-label"
+                            >
+                                {{ field.label }}
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.help_text %}
+
+                                <div class="form-text">
+                                    {{ field.help_text }}
+                                </div>
+
+                            {% endif %}
+
+                            {% for error in field.errors %}
+
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endfor %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100 py-2 fw-semibold"
+                    >
+                        Upload Song
+                    </button>
+
+                </form>
+
+            </div>
+
         </div>
-    </div>
-</section>
+    </section>
+</main>
 
 {% endblock %}
