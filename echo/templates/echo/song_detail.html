@@ -21,7 +21,7 @@
                 {{ song.title }}
             </h1>
 
-            <h2 class="h3 text-secondary mb-4">
+            <h2 class="h3 text-secondary mb-3">
                 {{ song.artist }}
             </h2>
 
@@ -29,7 +29,7 @@
                 {{ song.genre }}
             </span>
 
-            <p class="text-muted mt-3">
+            <p class="text-muted mt-3 mb-1">
                 Uploaded by
                 <a
                     href="{% url 'profile' song.uploaded_by.id %}"
@@ -37,6 +37,10 @@
                 >
                     {{ song.uploaded_by.username }}
                 </a>
+            </p>
+
+            <p class="text-muted">
+                {{ song.favorites_count }} favorite{{ song.favorites_count|pluralize }}
             </p>
 
             {% if user.is_authenticated %}
@@ -53,6 +57,7 @@
                         id="favorite-button"
                         type="submit"
                         class="btn btn-outline-light"
+                        aria-label="Toggle favorite"
                     >
                         <span id="favorite-text">
                             {% if user in song.favorites.all %}
@@ -62,7 +67,7 @@
                             {% endif %}
                         </span>
 
-                        (<span id="favorite-count">{{ song.favorites.count }}</span>)
+                        (<span id="favorite-count">{{ song.favorites_count }}</span>)
                     </button>
 
                 </form>
@@ -134,6 +139,10 @@
                                 <div class="p-3">
 
                                     <h5>{{ related_song.title }}</h5>
+
+                                    <p class="mb-1 text-muted">
+                                        {{ related_song.artist }}
+                                    </p>
 
                                     <p>{{ related_song.genre }}</p>
 
