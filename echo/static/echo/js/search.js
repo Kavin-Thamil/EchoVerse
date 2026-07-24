@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     async function fetchSongs() {
+        songsContainer.classList.add("loading");
+
         try {
             const params = new URLSearchParams({
                 search: filters.search,
@@ -50,9 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(`Search request failed (${response.status}).`);
             }
 
-            const data = await response.json();
+            const { songs = [] } = await response.json();
 
-            renderSongs(data.songs || []);
+            renderSongs(songs);
         } catch (error) {
             console.error("Song search failed:", error);
 
@@ -64,17 +66,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     </p>
                 </div>
             `;
+        } finally {
+            songsContainer.classList.remove("loading");
         }
     }
 
     function updateActiveGenre(activeButton) {
         genreButtons.forEach((button) => {
-            button.classList.remove("btn-primary");
-            button.classList.add("btn-outline-light");
-        });
+            const isActive = button === activeButton;
 
-        activeButton.classList.remove("btn-outline-light");
-        activeButton.classList.add("btn-primary");
+            button.classList.toggle("btn-primary", isActive);
+            button.classList.toggle("btn-outline-light", !isActive);
+            button.classList.toggle("active", isActive);
+
+            button.setAttribute("aria-pressed", String(isActive));
+        });
     }
 
     function renderSongs(songs) {
@@ -90,31 +96,48 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const html = songs
+        songsContainer.innerHTML = songs
             .map(
                 (song) => `
                     <div class="col-md-4">
                         <a
                             href="/song/${song.id}/"
                             class="text-decoration-none text-white"
+                            aria-label="View ${escapeHtml(song.title)}"
                         >
-                            <article class="music-card">
+                            <article class="music-card h-100">
+
                                 <img
                                     src="${song.cover_image}"
-                                    alt="${song.title}"
+                                    alt="${escapeHtml(song.title)} cover"
                                     class="img-fluid"
+                                    loading="lazy"
                                 >
 
                                 <div class="p-3">
-                                    <h4>${song.title}</h4>
 
-                                    <p>${song.genre}</p>
+                                    <h4>${escapeHtml(song.title)}</h4>
 
-                                    <audio controls preload="metadata" class="w-100">
-                                        <source src="${song.audio_file}">
+                                    <p class="mb-1 text-muted">
+                                        ${escapeHtml(song.artist)}
+                                    </p>
+
+                                    <p>${escapeHtml(song.genre)}</p>
+
+                                    <audio
+                                        controls
+                                        preload="metadata"
+                                        class="w-100"
+                                    >
+                                        <source
+                                            src="${song.audio_file}"
+                                            type="audio/mpeg"
+                                        >
                                         Your browser does not support the audio element.
                                     </audio>
+
                                 </div>
+
                             </article>
                         </a>
                     </div>
@@ -122,10 +145,14 @@ document.addEventListener("DOMContentLoaded", () => {
             )
             .join("");
 
-        songsContainer.innerHTML = html;
-
         if (typeof window.initializeAudioPlayers === "function") {
             window.initializeAudioPlayers();
         }
+    }
+
+    function escapeHtml(value) {
+        const div = document.createElement("div");
+        div.textContent = value ?? "";
+        return div.innerHTML;
     }
 });

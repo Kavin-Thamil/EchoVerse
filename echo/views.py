@@ -73,6 +73,7 @@ def search_songs(request):
                 {
                     "id": song.id,
                     "title": song.title,
+                    "artist": song.artist,
                     "genre": song.genre,
                     "cover_image": song.cover_image.url,
                     "audio_file": song.audio_file.url,
@@ -187,9 +188,10 @@ def profile(request, user_id):
 
     profile_user = get_object_or_404(User, pk=user_id)
 
-    user_songs = Song.objects.filter(
-        uploaded_by=profile_user
-    ).select_related("uploaded_by")
+    user_songs = (
+        Song.objects.filter(uploaded_by=profile_user)
+        .select_related("uploaded_by")
+    )
 
     return render(
         request,

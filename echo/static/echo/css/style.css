@@ -181,6 +181,26 @@ body {
 
 
 /* ==========================================================
+   LOADING STATE
+========================================================== */
+
+.loading {
+    pointer-events: none;
+    opacity: 0.65;
+    transition: opacity 0.2s ease;
+}
+
+.loading::after {
+    display: block;
+    margin-top: 2rem;
+    color: #b3b3b3;
+    text-align: center;
+    font-size: 0.95rem;
+    content: "Loading songs...";
+}
+
+
+/* ==========================================================
    MUSIC PLAYER
 ========================================================== */
 
