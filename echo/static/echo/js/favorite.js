@@ -52,10 +52,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
             favoriteCount.textContent = data.favorites_count;
 
+            if (typeof window.showToast === "function") {
+                window.showToast({
+                    title: "Favorites",
+                    message: data.is_favorited
+                        ? "Song added to your favorites."
+                        : "Song removed from your favorites.",
+                    type: data.is_favorited ? "success" : "secondary",
+                });
+            }
+
             favoriteButton.blur();
         } catch (error) {
             console.error("Favorite update failed:", error);
-            alert("Something went wrong. Please try again.");
+
+            if (typeof window.showToast === "function") {
+                window.showToast({
+                    title: "Error",
+                    message: "Something went wrong. Please try again.",
+                    type: "danger",
+                });
+            } else {
+                alert("Something went wrong. Please try again.");
+            }
         } finally {
             favoriteButton.disabled = false;
         }
