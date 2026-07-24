@@ -1,16 +1,7 @@
 let currentAudio = null;
 
-function initializeAudioPlayers() {
-    const audioPlayers = document.querySelectorAll("audio");
-
-    audioPlayers.forEach((audio) => {
-        audio.removeEventListener("play", handleAudioPlay);
-        audio.addEventListener("play", handleAudioPlay);
-    });
-}
-
 function handleAudioPlay(event) {
-    const playingAudio = event.target;
+    const playingAudio = event.currentTarget;
 
     if (currentAudio && currentAudio !== playingAudio) {
         currentAudio.pause();
@@ -20,8 +11,24 @@ function handleAudioPlay(event) {
     currentAudio = playingAudio;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    initializeAudioPlayers();
-});
+function handleAudioEnded(event) {
+    if (currentAudio === event.currentTarget) {
+        currentAudio = null;
+    }
+}
+
+function initializeAudioPlayers() {
+    const audioPlayers = document.querySelectorAll("audio");
+
+    audioPlayers.forEach((audio) => {
+        audio.removeEventListener("play", handleAudioPlay);
+        audio.removeEventListener("ended", handleAudioEnded);
+
+        audio.addEventListener("play", handleAudioPlay);
+        audio.addEventListener("ended", handleAudioEnded);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", initializeAudioPlayers);
 
 window.initializeAudioPlayers = initializeAudioPlayers;

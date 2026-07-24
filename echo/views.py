@@ -2,6 +2,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -9,29 +10,37 @@ from .forms import RegisterForm, SongForm
 from .models import Song
 
 
-def home(request):
-    """Display the homepage with optional search and genre filters."""
+def _filter_songs(search_query="", genre=""):
+    """Return a filtered queryset of songs."""
 
-    songs = Song.objects.all()
+    songs = Song.objects.select_related("uploaded_by")
 
-    selected_genre = request.GET.get("genre")
-    search_query = request.GET.get("search")
-
-    if selected_genre:
-        songs = songs.filter(
-            genre__iexact=selected_genre
-        )
+    if genre:
+        songs = songs.filter(genre__iexact=genre)
 
     if search_query:
         songs = songs.filter(
-            title__icontains=search_query
+            Q(title__icontains=search_query)
+            | Q(artist__icontains=search_query)
         )
 
+    return songs
+
+
+def home(request):
+    """Display the homepage."""
+
+    selected_genre = request.GET.get("genre", "").strip()
+    search_query = request.GET.get("search", "").strip()
+
+    songs = _filter_songs(
+        search_query=search_query,
+        genre=selected_genre,
+    )
+
     genres = (
-        Song.objects.values_list(
-            "genre",
-            flat=True,
-        )
+        Song.objects.order_by("genre")
+        .values_list("genre", flat=True)
         .distinct()
     )
 
@@ -48,37 +57,28 @@ def home(request):
 
 
 def search_songs(request):
-    """Return songs as JSON for AJAX search."""
+    """Return filtered songs as JSON."""
 
-    songs = Song.objects.all()
+    search_query = request.GET.get("search", "").strip()
+    selected_genre = request.GET.get("genre", "").strip()
 
-    search_query = request.GET.get("search")
-    selected_genre = request.GET.get("genre")
-
-    if selected_genre:
-        songs = songs.filter(
-            genre__iexact=selected_genre
-        )
-
-    if search_query:
-        songs = songs.filter(
-            title__icontains=search_query
-        )
-
-    data = [
-        {
-            "id": song.id,
-            "title": song.title,
-            "genre": song.genre,
-            "cover_image": song.cover_image.url,
-            "audio_file": song.audio_file.url,
-        }
-        for song in songs
-    ]
+    songs = _filter_songs(
+        search_query=search_query,
+        genre=selected_genre,
+    )
 
     return JsonResponse(
         {
-            "songs": data,
+            "songs": [
+                {
+                    "id": song.id,
+                    "title": song.title,
+                    "genre": song.genre,
+                    "cover_image": song.cover_image.url,
+                    "audio_file": song.audio_file.url,
+                }
+                for song in songs
+            ]
         }
     )
 
@@ -88,10 +88,7 @@ def upload_song(request):
     """Upload a new song."""
 
     if request.method == "POST":
-        form = SongForm(
-            request.POST,
-            request.FILES,
-        )
+        form = SongForm(request.POST, request.FILES)
 
         if form.is_valid():
             song = form.save(commit=False)
@@ -99,7 +96,6 @@ def upload_song(request):
             song.save()
 
             return redirect("home")
-
     else:
         form = SongForm()
 
@@ -113,13 +109,15 @@ def upload_song(request):
 def register(request):
     """Register a new user."""
 
+    if request.user.is_authenticated:
+        return redirect("home")
+
     if request.method == "POST":
         form = RegisterForm(request.POST)
 
         if form.is_valid():
             form.save()
             return redirect("login")
-
     else:
         form = RegisterForm()
 
@@ -133,20 +131,17 @@ def register(request):
 def user_login(request):
     """Authenticate and log in a user."""
 
+    if request.user.is_authenticated:
+        return redirect("home")
+
     if request.method == "POST":
-        form = AuthenticationForm(
-            data=request.POST
-        )
+        form = AuthenticationForm(request, data=request.POST)
 
         if form.is_valid():
-            login(
-                request,
-                form.get_user(),
-            )
+            login(request, form.get_user())
             return redirect("home")
-
     else:
-        form = AuthenticationForm()
+        form = AuthenticationForm(request)
 
     return render(
         request,
@@ -155,6 +150,7 @@ def user_login(request):
     )
 
 
+@login_required
 def user_logout(request):
     """Log out the current user."""
 
@@ -163,18 +159,17 @@ def user_logout(request):
 
 
 def song_detail(request, song_id):
-    """Display details for a single song."""
+    """Display a song and related songs."""
 
     song = get_object_or_404(
-        Song,
-        id=song_id,
+        Song.objects.select_related("uploaded_by").prefetch_related("favorites"),
+        pk=song_id,
     )
 
     related_songs = (
-        Song.objects.filter(
-            genre=song.genre
-        )
-        .exclude(id=song.id)[:3]
+        Song.objects.filter(genre=song.genre)
+        .exclude(pk=song.pk)
+        .select_related("uploaded_by")[:3]
     )
 
     return render(
@@ -190,14 +185,11 @@ def song_detail(request, song_id):
 def profile(request, user_id):
     """Display a user's public profile."""
 
-    profile_user = get_object_or_404(
-        User,
-        id=user_id,
-    )
+    profile_user = get_object_or_404(User, pk=user_id)
 
     user_songs = Song.objects.filter(
         uploaded_by=profile_user
-    )
+    ).select_related("uploaded_by")
 
     return render(
         request,
@@ -211,11 +203,11 @@ def profile(request, user_id):
 
 @login_required
 def delete_song(request, song_id):
-    """Delete a song uploaded by the current user."""
+    """Delete one of the current user's songs."""
 
     song = get_object_or_404(
         Song,
-        id=song_id,
+        pk=song_id,
     )
 
     if song.uploaded_by != request.user:
@@ -236,10 +228,11 @@ def delete_song(request, song_id):
 
 @login_required
 def my_uploads(request):
-    """Display songs uploaded by the current user."""
+    """Display the current user's uploaded songs."""
 
-    songs = Song.objects.filter(
-        uploaded_by=request.user
+    songs = (
+        Song.objects.filter(uploaded_by=request.user)
+        .select_related("uploaded_by")
     )
 
     return render(
@@ -251,32 +244,46 @@ def my_uploads(request):
 
 @login_required
 def toggle_favorite(request, song_id):
-    """Add or remove a song from the user's favorites."""
+    """Toggle a song as a favorite."""
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Method not allowed.",
+            },
+            status=405,
+        )
 
     song = get_object_or_404(
-        Song,
-        id=song_id,
+        Song.objects.prefetch_related("favorites"),
+        pk=song_id,
     )
 
-    if request.user in song.favorites.all():
+    if song.favorites.filter(pk=request.user.pk).exists():
         song.favorites.remove(request.user)
         is_favorited = False
     else:
         song.favorites.add(request.user)
         is_favorited = True
 
-    return JsonResponse({
-        "success": True,
-        "is_favorited": is_favorited,
-        "favorites_count": song.favorites.count(),
-    })
+    return JsonResponse(
+        {
+            "success": True,
+            "is_favorited": is_favorited,
+            "favorites_count": song.favorites.count(),
+        }
+    )
 
 
 @login_required
 def my_favorites(request):
-    """Display the user's favorite songs."""
+    """Display the current user's favorite songs."""
 
-    songs = request.user.favorite_songs.all()
+    songs = (
+        request.user.favorite_songs.select_related("uploaded_by")
+        .all()
+    )
 
     return render(
         request,

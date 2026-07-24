@@ -1,39 +1,42 @@
 # EchoVerse
 
-EchoVerse is a modern music streaming platform built with Django that allows users to discover, upload, and manage royalty-free music.
+EchoVerse is a modern royalty-free music streaming platform built with Django. Users can discover, upload, organize, and favorite music through a clean, responsive interface.
+
+---
 
 ## Features
 
-* User registration and authentication
-* Music upload with cover images
-* Song detail pages with audio playback
-* Genre-based filtering
-* Song search functionality
-* User profiles
-* Favorites system
-* Personal uploads dashboard
-* Related song recommendations
+- User registration and authentication
+- Secure login and logout
+- Upload royalty-free songs with cover images
+- Stream music using the built-in HTML5 audio player
+- Search songs by title or artist
+- Filter songs by genre
+- Song detail pages with related song recommendations
+- Favorite and unfavorite songs asynchronously (AJAX)
+- Personal uploads dashboard
+- Favorites dashboard
+- Public user profiles
+- Responsive UI for desktop and mobile devices
+- Django Admin for content management
+
+---
 
 ## Tech Stack
 
-* Python
-* Django
-* SQLite
-* Bootstrap 5
-* HTML/CSS
+### Backend
+- Python
+- Django
 
-## Screenshots
+### Frontend
+- HTML5
+- CSS3
+- Bootstrap 5
+- JavaScript (Fetch API)
 
-Coming soon.
+### Database
+- SQLite (development)
 
-## Future Improvements
+---
 
-* Custom audio player
-* Playlist support
-* Mobile UI improvements
-* Cloud deployment
-* Enhanced recommendation system
-
-## Author
-
-Kavin Thamil
+## Project Structure

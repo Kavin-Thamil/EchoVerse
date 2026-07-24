@@ -1,10 +1,12 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
 
     <title>{% block title %}EchoVerse{% endblock %}</title>
 
@@ -28,11 +30,13 @@
         crossorigin="anonymous"
     >
 
-    <!-- Custom Styles -->
+    <!-- Application Styles -->
     <link
         rel="stylesheet"
         href="{% static 'echo/css/style.css' %}"
     >
+
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
@@ -57,7 +61,10 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div
+                class="collapse navbar-collapse"
+                id="navbarNav"
+            >
                 <ul class="navbar-nav ms-auto">
 
                     {% if user.is_authenticated %}
@@ -69,25 +76,37 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'upload_song' %}">
+                            <a
+                                class="nav-link"
+                                href="{% url 'upload_song' %}"
+                            >
                                 Upload
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'my_uploads' %}">
+                            <a
+                                class="nav-link"
+                                href="{% url 'my_uploads' %}"
+                            >
                                 My Uploads
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'my_favorites' %}">
+                            <a
+                                class="nav-link"
+                                href="{% url 'my_favorites' %}"
+                            >
                                 Favorites
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">
+                            <a
+                                class="nav-link"
+                                href="{% url 'logout' %}"
+                            >
                                 Logout
                             </a>
                         </li>
@@ -95,13 +114,19 @@
                     {% else %}
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
+                            <a
+                                class="nav-link"
+                                href="{% url 'login' %}"
+                            >
                                 Login
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">
+                            <a
+                                class="nav-link"
+                                href="{% url 'register' %}"
+                            >
                                 Register
                             </a>
                         </li>
@@ -116,21 +141,22 @@
 
     <!-- Page Content -->
     <main>
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
-    <!-- Feature JavaScript -->
-    <script src="{% static 'echo/js/favorite.js' %}"></script>
-    <script src="{% static 'echo/js/player.js' %}"></script>
-    <script src="{% static 'echo/js/search.js' %}"></script>
+    <!-- Feature Scripts -->
+    <script defer src="{% static 'echo/js/player.js' %}"></script>
+    <script defer src="{% static 'echo/js/favorite.js' %}"></script>
+    <script defer src="{% static 'echo/js/search.js' %}"></script>
 
-    <!-- Bootstrap JavaScript -->
+    <!-- Bootstrap -->
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"
     ></script>
+
+    {% block extra_js %}{% endblock %}
 
 </body>
 </html>

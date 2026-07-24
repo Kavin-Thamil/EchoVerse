@@ -10,13 +10,13 @@ class SongForm(forms.ModelForm):
 
     class Meta:
         model = Song
-        fields = [
+        fields = (
             "title",
             "artist",
             "genre",
             "cover_image",
             "audio_file",
-        ]
+        )
 
         widgets = {
             "title": forms.TextInput(
@@ -73,6 +73,15 @@ class SongForm(forms.ModelForm):
             "audio_file": "Supported formats: MP3, WAV, OGG.",
         }
 
+    def clean_title(self):
+        return self.cleaned_data["title"].strip()
+
+    def clean_artist(self):
+        return self.cleaned_data["artist"].strip()
+
+    def clean_genre(self):
+        return self.cleaned_data["genre"].strip()
+
 
 class RegisterForm(UserCreationForm):
     """User registration form."""
@@ -119,9 +128,19 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = [
+        fields = (
             "username",
             "email",
             "password1",
             "password2",
-        ]
+        )
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(
+                "An account with this email address already exists."
+            )
+
+        return email

@@ -3,42 +3,38 @@
 {% block title %}Delete Song | EchoVerse{% endblock %}
 
 {% block content %}
+<section class="auth-section">
+    <div class="auth-card text-center">
 
-<main>
-    <section class="auth-section">
+        <h2 class="mb-4">Delete Song</h2>
 
-        <div class="auth-card text-center">
+        <p class="mb-4">
+            Are you sure you want to permanently delete
+            <strong>{{ song.title }}</strong>?
+        </p>
 
-            <h2 class="mb-4">
-                Delete Song
-            </h2>
+        <p class="text-muted mb-4">
+            This action cannot be undone.
+        </p>
 
-            <p class="mb-4">
-                Are you sure you want to delete
-                <strong>{{ song.title }}</strong>?
-            </p>
+        <form method="post" class="d-inline">
+            {% csrf_token %}
 
-            <form method="post">
-                {% csrf_token %}
+            <button
+                type="submit"
+                class="btn btn-danger me-2"
+            >
+                Delete
+            </button>
 
-                <button
-                    type="submit"
-                    class="btn btn-danger me-2"
-                >
-                    Delete
-                </button>
+            <a
+                href="{% url 'song_detail' song.id %}"
+                class="btn btn-outline-light"
+            >
+                Cancel
+            </a>
+        </form>
 
-                <a
-                    href="{% url 'song_detail' song.id %}"
-                    class="btn btn-outline-light"
-                >
-                    Cancel
-                </a>
-            </form>
-
-        </div>
-
-    </section>
-</main>
-
+    </div>
+</section>
 {% endblock %}

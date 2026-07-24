@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 
+app_name = "echo"
 
 urlpatterns = [
     # Home
@@ -16,7 +17,11 @@ urlpatterns = [
     # Songs
     path("upload/", views.upload_song, name="upload_song"),
     path("song/<int:song_id>/", views.song_detail, name="song_detail"),
-    path("song/<int:song_id>/delete/", views.delete_song, name="delete_song"),
+    path(
+        "song/<int:song_id>/delete/",
+        views.delete_song,
+        name="delete_song",
+    ),
     path(
         "song/<int:song_id>/favorite/",
         views.toggle_favorite,

@@ -3,70 +3,70 @@
 {% block title %}My Uploads | EchoVerse{% endblock %}
 
 {% block content %}
+<section class="songs-section">
+    <div class="container">
 
-<main>
-    <section class="songs-section">
-        <div class="container">
+        <h1 class="mb-3">
+            My Uploads
+        </h1>
 
-            <h1 class="mb-3">
-                My Uploads
-            </h1>
+        <p class="text-muted mb-5">
+            Songs uploaded by you.
+        </p>
 
-            <p class="text-muted mb-5">
-                Songs uploaded by you.
-            </p>
+        <div class="row g-4">
 
-            <div class="row g-4">
+            {% for song in songs %}
 
-                {% for song in songs %}
+                <div class="col-md-4">
 
-                    <div class="col-md-4">
+                    <a
+                        href="{% url 'song_detail' song.id %}"
+                        class="text-decoration-none text-white"
+                        aria-label="View {{ song.title }}"
+                    >
+                        <article class="music-card h-100">
 
-                        <a
-                            href="{% url 'song_detail' song.id %}"
-                            class="text-decoration-none text-white"
-                        >
+                            <img
+                                src="{{ song.cover_image.url }}"
+                                alt="{{ song.title }} cover"
+                                class="img-fluid"
+                                loading="lazy"
+                            >
 
-                            <article class="music-card">
+                            <div class="p-3">
 
-                                <img
-                                    src="{{ song.cover_image.url }}"
-                                    alt="{{ song.title }} Cover"
-                                    class="img-fluid"
-                                >
+                                <h4>{{ song.title }}</h4>
 
-                                <div class="p-3">
+                                <p>{{ song.genre }}</p>
 
-                                    <h4>{{ song.title }}</h4>
+                            </div>
 
-                                    <p>{{ song.genre }}</p>
+                        </article>
+                    </a>
 
-                                </div>
+                </div>
 
-                            </article>
+            {% empty %}
 
-                        </a>
+                <div class="col-12 text-center">
 
-                    </div>
-
-                {% empty %}
-
-                    <div class="col-12 text-center">
+                    <div class="auth-card">
 
                         <h4>No uploads yet 🎵</h4>
 
-                        <p class="text-muted">
+                        <p class="text-muted mb-0">
                             Upload your first track.
                         </p>
 
                     </div>
 
-                {% endfor %}
+                </div>
 
-            </div>
+            {% endfor %}
 
         </div>
-    </section>
-</main>
 
+    </div>
+</section>
 {% endblock %}

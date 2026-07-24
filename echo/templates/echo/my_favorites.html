@@ -3,71 +3,70 @@
 {% block title %}My Favorites | EchoVerse{% endblock %}
 
 {% block content %}
+<section class="songs-section">
+    <div class="container">
 
-<main>
-    <section class="songs-section">
-        <div class="container">
+        <h1 class="mb-3">
+            My Favorites
+        </h1>
 
-            <h1 class="mb-3">
-                My Favorites
-            </h1>
+        <p class="text-muted mb-5">
+            Songs you've liked.
+        </p>
 
-            <p class="text-muted mb-5">
-                Songs you've liked.
-            </p>
+        <div class="row g-4">
 
-            <div class="row g-4">
+            {% for song in songs %}
 
-                {% for song in songs %}
+                <div class="col-md-4">
 
-                    <div class="col-md-4">
+                    <a
+                        href="{% url 'song_detail' song.id %}"
+                        class="text-decoration-none text-white"
+                        aria-label="View {{ song.title }}"
+                    >
+                        <article class="music-card h-100">
 
-                        <a
-                            href="{% url 'song_detail' song.id %}"
-                            class="text-decoration-none text-white"
-                        >
+                            <img
+                                src="{{ song.cover_image.url }}"
+                                alt="{{ song.title }} cover"
+                                class="img-fluid"
+                                loading="lazy"
+                            >
 
-                            <article class="music-card">
+                            <div class="p-3">
 
-                                <img
-                                    src="{{ song.cover_image.url }}"
-                                    alt="{{ song.title }} Cover"
-                                    class="img-fluid"
-                                >
+                                <h4>{{ song.title }}</h4>
 
-                                <div class="p-3">
-                                    <h4>{{ song.title }}</h4>
-                                    <p>{{ song.genre }}</p>
-                                </div>
+                                <p>{{ song.genre }}</p>
 
-                            </article>
+                            </div>
 
-                        </a>
+                        </article>
+                    </a>
+
+                </div>
+
+            {% empty %}
+
+                <div class="col-12 text-center">
+
+                    <div class="auth-card">
+
+                        <h4>No favorite songs yet ❤️</h4>
+
+                        <p class="text-muted mb-0">
+                            Start exploring and save songs you like.
+                        </p>
 
                     </div>
 
-                {% empty %}
+                </div>
 
-                    <div class="col-12 text-center">
-
-                        <div class="auth-card">
-
-                            <h4>No favorite songs yet ❤️</h4>
-
-                            <p class="text-muted">
-                                Start exploring and save songs you like.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                {% endfor %}
-
-            </div>
+            {% endfor %}
 
         </div>
-    </section>
-</main>
 
+    </div>
+</section>
 {% endblock %}

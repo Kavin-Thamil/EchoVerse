@@ -6,21 +6,17 @@ class Song(models.Model):
     """Represents a royalty-free song uploaded by a user."""
 
     title = models.CharField(max_length=200)
-
     artist = models.CharField(max_length=200)
-
     genre = models.CharField(max_length=100)
 
     cover_image = models.ImageField(upload_to="covers/")
-
     audio_file = models.FileField(upload_to="songs/")
 
     uploaded_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name="uploaded_songs",
     )
-
-    created_at = models.DateTimeField(auto_now_add=True)
 
     favorites = models.ManyToManyField(
         User,
@@ -28,9 +24,21 @@ class Song(models.Model):
         blank=True,
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ("-created_at",)
+        indexes = [
+            models.Index(fields=["title"]),
+            models.Index(fields=["genre"]),
+            models.Index(fields=["created_at"]),
+        ]
 
     def __str__(self):
         """Return the song title."""
         return self.title
+
+    @property
+    def favorites_count(self):
+        """Return the number of users who favorited the song."""
+        return self.favorites.count()
