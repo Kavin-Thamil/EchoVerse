@@ -76,6 +76,7 @@
                     class="btn btn-sm btn-outline-light genre-filter"
                     data-genre="{{ genre }}"
                     aria-pressed="false"
+                    title="{{ genre }}"
                 >
                     {{ genre }}
                 </button>
@@ -98,6 +99,7 @@
                             href="{% url 'song_detail' song.id %}"
                             class="text-decoration-none text-white"
                             aria-label="View {{ song.title }}"
+                            title="{{ song.title }}"
                         >
                             <article class="music-card h-100">
 
@@ -110,13 +112,23 @@
 
                                 <div class="p-3">
 
-                                    <h4>{{ song.title }}</h4>
+                                    <h4 title="{{ song.title }}">
+                                        {{ song.title }}
+                                    </h4>
 
-                                    <p class="mb-1 text-muted">
+                                    <p
+                                        class="artist-name"
+                                        title="{{ song.artist }}"
+                                    >
                                         {{ song.artist }}
                                     </p>
 
-                                    <p>{{ song.genre }}</p>
+                                    <p
+                                        class="genre-name"
+                                        title="{{ song.genre }}"
+                                    >
+                                        {{ song.genre }}
+                                    </p>
 
                                     <audio
                                         controls

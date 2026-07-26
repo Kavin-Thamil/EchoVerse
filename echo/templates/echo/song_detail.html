@@ -17,15 +17,37 @@
                 loading="lazy"
             >
 
-            <h1 class="display-4 fw-bold mt-4">
+            <h1
+                class="display-4 fw-bold mt-4"
+                style="
+                    word-break: break-word;
+                    overflow-wrap: anywhere;
+                "
+                title="{{ song.title }}"
+            >
                 {{ song.title }}
             </h1>
 
-            <h2 class="h3 text-secondary mb-3">
+            <h2
+                class="h3 text-secondary mb-3"
+                style="
+                    word-break: break-word;
+                    overflow-wrap: anywhere;
+                "
+                title="{{ song.artist }}"
+            >
                 {{ song.artist }}
             </h2>
 
-            <span class="badge bg-primary fs-6 px-3 py-2">
+            <span
+                class="badge bg-primary fs-6 px-3 py-2"
+                style="
+                    white-space: normal;
+                    word-break: break-word;
+                    overflow-wrap: anywhere;
+                "
+                title="{{ song.genre }}"
+            >
                 {{ song.genre }}
             </span>
 
@@ -138,13 +160,36 @@
 
                                 <div class="p-3">
 
-                                    <h5>{{ related_song.title }}</h5>
+                                    <h5
+                                        style="
+                                            word-break: break-word;
+                                            overflow-wrap: anywhere;
+                                        "
+                                        title="{{ related_song.title }}"
+                                    >
+                                        {{ related_song.title }}
+                                    </h5>
 
-                                    <p class="mb-1 text-muted">
+                                    <p
+                                        class="mb-1 text-muted"
+                                        style="
+                                            word-break: break-word;
+                                            overflow-wrap: anywhere;
+                                        "
+                                        title="{{ related_song.artist }}"
+                                    >
                                         {{ related_song.artist }}
                                     </p>
 
-                                    <p>{{ related_song.genre }}</p>
+                                    <p
+                                        style="
+                                            word-break: break-word;
+                                            overflow-wrap: anywhere;
+                                        "
+                                        title="{{ related_song.genre }}"
+                                    >
+                                        {{ related_song.genre }}
+                                    </p>
 
                                 </div>
 
