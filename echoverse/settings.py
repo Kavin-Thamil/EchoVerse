@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 # ------------------------------------------------------------------------------
 # Paths
@@ -18,16 +21,19 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables
+load_dotenv(BASE_DIR / ".env")
+
 
 # ------------------------------------------------------------------------------
 # Security
 # ------------------------------------------------------------------------------
 
 # SECURITY WARNING: Keep the secret key used in production secret.
-SECRET_KEY = "django-insecure-7w+ll#gc%uyxpg2rh(-oo#y%lps62j++eox!i%c+++g*7y2!4a"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: Don't run with debug enabled in production.
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = []
 
@@ -76,7 +82,7 @@ ROOT_URLCONF = "echoverse.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -146,6 +152,7 @@ USE_TZ = True
 # ------------------------------------------------------------------------------
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

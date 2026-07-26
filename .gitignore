@@ -1,9 +1,28 @@
+# Virtual Environment
 venv/
-__pycache__/
-*.pyc
+.venv/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
 db.sqlite3
 
+# Uploaded Media
 media/
 
+# Environment Variables
 .env
+
+# Static Files (generated during deployment)
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
