@@ -15,6 +15,32 @@ body {
     line-height: 1.6;
 }
 
+/* Prevent extremely long words from breaking layouts */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+button,
+.badge {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.text-muted {
+    color: #b7b7b7 !important;
+}
+
+.badge {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+}
+
 
 /* ==========================================================
    HERO SECTION
@@ -254,7 +280,6 @@ body {
     color: #b3b3b3;
 }
 
-
 /* ==========================================================
    AUTHENTICATION
 ========================================================== */
@@ -435,6 +460,10 @@ input:-webkit-autofill:active {
 
     .hero-section h1 {
         font-size: 3rem;
+    }
+
+    .display-4 {
+        font-size: 2.3rem;
     }
 
     .hero-section p {

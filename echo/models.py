@@ -42,3 +42,14 @@ class Song(models.Model):
     def favorites_count(self):
         """Return the number of users who favorited the song."""
         return self.favorites.count()
+
+    def delete(self, *args, **kwargs):
+        """Delete the associated media files before removing the song."""
+
+        if self.cover_image:
+            self.cover_image.delete(save=False)
+
+        if self.audio_file:
+            self.audio_file.delete(save=False)
+
+        super().delete(*args, **kwargs)

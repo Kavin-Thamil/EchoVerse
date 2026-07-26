@@ -22,10 +22,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    let isSubmitting = false;
+
     favoriteForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
+        if (isSubmitting) {
+            return;
+        }
+
+        isSubmitting = true;
         favoriteButton.disabled = true;
+
+        const originalButtonText = favoriteText.textContent;
+        favoriteText.textContent = "⏳ Updating...";
 
         try {
             const response = await fetch(favoriteForm.action, {
@@ -66,6 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Favorite update failed:", error);
 
+            favoriteText.textContent = originalButtonText;
+
             if (typeof window.showToast === "function") {
                 window.showToast({
                     title: "Error",
@@ -76,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Something went wrong. Please try again.");
             }
         } finally {
+            isSubmitting = false;
             favoriteButton.disabled = false;
         }
     });
