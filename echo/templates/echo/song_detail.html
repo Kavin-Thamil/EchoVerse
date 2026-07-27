@@ -3,210 +3,196 @@
 {% block title %}{{ song.title }} | EchoVerse{% endblock %}
 
 {% block content %}
-<section class="songs-section">
+<section class="songs-section py-5">
     <div class="container">
 
-        <!-- Song Details -->
-        <div class="text-center mb-5">
-
-            <img
-                src="{{ song.cover_image.url }}"
-                alt="{{ song.title }} cover"
-                class="img-fluid rounded shadow-lg"
-                style="max-width: 550px;"
-                loading="lazy"
-            >
-
-            <h1
-                class="display-4 fw-bold mt-4"
-                style="
-                    word-break: break-word;
-                    overflow-wrap: anywhere;
-                "
-                title="{{ song.title }}"
-            >
-                {{ song.title }}
-            </h1>
-
-            <h2
-                class="h3 text-secondary mb-3"
-                style="
-                    word-break: break-word;
-                    overflow-wrap: anywhere;
-                "
-                title="{{ song.artist }}"
-            >
-                {{ song.artist }}
-            </h2>
-
-            <span
-                class="badge bg-primary fs-6 px-3 py-2"
-                style="
-                    white-space: normal;
-                    word-break: break-word;
-                    overflow-wrap: anywhere;
-                "
-                title="{{ song.genre }}"
-            >
-                {{ song.genre }}
-            </span>
-
-            <p class="text-muted mt-3 mb-1">
-                Uploaded by
-                <a
-                    href="{% url 'profile' song.uploaded_by.id %}"
-                    class="text-decoration-none"
+        <!-- Modern Split Hero Section with Matching Theme Background -->
+        <div 
+            class="row align-items-center rounded-4 p-4 p-lg-5 shadow-lg mb-5"
+            style="background-color: #161616; border: 1px solid #222222;"
+        >
+            
+            <!-- Cover Art Column -->
+            <div class="col-lg-4 text-center mb-4 mb-lg-0">
+                <img
+                    src="{{ song.cover_image.url }}"
+                    alt="{{ song.title }} cover"
+                    class="img-fluid rounded-3 shadow"
+                    style="width: 100%; max-width: 320px; aspect-ratio: 1/1; object-fit: cover;"
+                    loading="lazy"
                 >
-                    {{ song.uploaded_by.username }}
-                </a>
-            </p>
+            </div>
 
-            <p class="text-muted">
-                {{ song.favorites_count }} favorite{{ song.favorites_count|pluralize }}
-            </p>
-
-            {% if user.is_authenticated %}
-
-                <form
-                    id="favorite-form"
-                    method="post"
-                    action="{% url 'toggle_favorite' song.id %}"
-                    class="mt-3"
-                >
-                    {% csrf_token %}
-
-                    <button
-                        id="favorite-button"
-                        type="submit"
-                        class="btn btn-outline-light"
-                        aria-label="Toggle favorite"
+            <!-- Song Info & Actions Column -->
+            <div class="col-lg-8 ps-lg-4">
+                
+                <div class="mb-3">
+                    <span
+                        class="badge small px-3 py-2 rounded-pill card-genre-badge fs-6"
+                        style="word-break: break-word; overflow-wrap: anywhere;"
+                        title="{{ song.genre }}"
                     >
-                        <span id="favorite-text">
-                            {% if user in song.favorites.all %}
-                                ❤️ Favorited
-                            {% else %}
-                                🤍 Add to Favorites
-                            {% endif %}
-                        </span>
-
-                        (<span id="favorite-count">{{ song.favorites_count }}</span>)
-                    </button>
-
-                </form>
-
-            {% endif %}
-
-            {% if user == song.uploaded_by %}
-
-                <div class="mt-3">
-
-                    <a
-                        href="{% url 'delete_song' song.id %}"
-                        class="btn btn-danger"
-                    >
-                        Delete Song
-                    </a>
-
+                        {{ song.genre }}
+                    </span>
                 </div>
 
-            {% endif %}
-
-        </div>
-
-        <!-- Audio Player -->
-        <div
-            class="mx-auto"
-            style="max-width: 700px;"
-        >
-            <audio
-                controls
-                preload="metadata"
-                class="w-100"
-            >
-                <source
-                    src="{{ song.audio_file.url }}"
-                    type="audio/mpeg"
+                <h1
+                    class="display-5 fw-bold text-white mb-2"
+                    style="word-break: break-word; overflow-wrap: anywhere;"
+                    title="{{ song.title }}"
                 >
-                Your browser does not support the audio element.
-            </audio>
+                    {{ song.title }}
+                </h1>
+
+                <h2
+                    class="h4 text-light opacity-75 mb-4"
+                    style="word-break: break-word; overflow-wrap: anywhere;"
+                    title="{{ song.artist }}"
+                >
+                    {{ song.artist }}
+                </h2>
+
+                <div class="d-flex align-items-center text-muted mb-4 flex-wrap gap-3">
+                    <span>
+                        Uploaded by 
+                        <a href="{% url 'profile' song.uploaded_by.id %}" class="text-white text-decoration-none fw-semibold">
+                            {{ song.uploaded_by.username }}
+                        </a>
+                    </span>
+                    <span>•</span>
+                    <span>{{ song.favorites_count }} favorite{{ song.favorites_count|pluralize }}</span>
+                </div>
+
+                <!-- Action Buttons Group -->
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <!-- Play Button -->
+                    <button
+                        class="btn btn-primary btn-lg px-4 play-btn shadow"
+                        data-audio-url="{{ song.audio_file.url }}"
+                        data-title="{{ song.title }}"
+                        data-artist="{{ song.artist }}"
+                        data-cover-url="{{ song.cover_image.url }}"
+                    >
+                        ▶ Play Song
+                    </button>
+
+                    <!-- Favorite Form Button -->
+                    {% if user.is_authenticated %}
+                        <form
+                            id="favorite-form"
+                            method="post"
+                            action="{% url 'toggle_favorite' song.id %}"
+                            class="m-0"
+                        >
+                            {% csrf_token %}
+                            <button
+                                id="favorite-button"
+                                type="submit"
+                                class="btn btn-outline-light btn-lg px-4"
+                                aria-label="Toggle favorite"
+                            >
+                                <span id="favorite-text">
+                                    {% if user in song.favorites.all %}
+                                        ❤️ Favorited
+                                    {% else %}
+                                        🤍 Add to Favorites
+                                    {% endif %}
+                                </span>
+                                (<span id="favorite-count">{{ song.favorites_count }}</span>)
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <!-- Delete Button (Owner Only) -->
+                    {% if user == song.uploaded_by %}
+                        <a
+                            href="{% url 'delete_song' song.id %}"
+                            class="btn btn-outline-danger btn-lg"
+                        >
+                            Delete
+                        </a>
+                    {% endif %}
+                </div>
+
+            </div>
+
         </div>
 
-        <!-- Related Songs -->
+        <!-- Recommended / Related Songs Section -->
         <div class="mt-5">
 
-            <h3 class="mb-4">
-                You May Also Like
-            </h3>
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h3 class="fw-bold mb-0 text-white">
+                    Recommended Tracks
+                </h3>
+            </div>
 
             <div class="row g-4">
 
                 {% for related_song in related_songs %}
 
-                    <div class="col-md-4">
+                    <div class="col-sm-6 col-lg-4 col-xl-3">
 
-                        <a
-                            href="{% url 'song_detail' related_song.id %}"
-                            class="text-decoration-none text-white"
-                            aria-label="View {{ related_song.title }}"
+                        <article 
+                            class="music-card h-100 d-flex flex-column position-relative shadow-sm"
+                            data-audio-url="{{ related_song.audio_file.url }}"
+                            data-title="{{ related_song.title }}"
+                            data-artist="{{ related_song.artist }}"
+                            data-cover-url="{{ related_song.cover_image.url }}"
                         >
-                            <article class="music-card h-100">
 
+                            <!-- Cover Art Container with Top-Right Play Badge -->
+                            <div class="position-relative overflow-hidden">
                                 <img
                                     src="{{ related_song.cover_image.url }}"
                                     alt="{{ related_song.title }} cover"
-                                    class="img-fluid"
+                                    class="img-fluid w-100 song-card-img"
                                     loading="lazy"
                                 >
+                                <div class="position-absolute top-0 end-0 m-3 z-2">
+                                    <span class="card-play-badge d-flex align-items-center justify-content-center rounded-circle shadow-lg"
+                                          style="width: 42px; height: 42px; background: rgba(15, 15, 15, 0.75); border: 2px solid #7c4dff; color: #ffffff; backdrop-filter: blur(4px);">
+                                        ▶
+                                    </span>
+                                </div>
+                            </div>
 
-                                <div class="p-3">
+                            <!-- Card Body -->
+                            <div class="p-3 d-flex flex-column flex-grow-1">
 
-                                    <h5
-                                        style="
-                                            word-break: break-word;
-                                            overflow-wrap: anywhere;
-                                        "
-                                        title="{{ related_song.title }}"
-                                    >
-                                        {{ related_song.title }}
-                                    </h5>
+                                <a
+                                    href="{% url 'song_detail' related_song.id %}"
+                                    class="text-decoration-none text-white text-truncate mb-1 fw-bold fs-5 card-title-link"
+                                    title="{{ related_song.title }}"
+                                >
+                                    {{ related_song.title }}
+                                </a>
 
-                                    <p
-                                        class="mb-1 text-muted"
-                                        style="
-                                            word-break: break-word;
-                                            overflow-wrap: anywhere;
-                                        "
-                                        title="{{ related_song.artist }}"
-                                    >
-                                        {{ related_song.artist }}
-                                    </p>
+                                <p class="text-muted small text-truncate mb-3" title="{{ related_song.artist }}">
+                                    By {{ related_song.artist }}
+                                </p>
 
-                                    <p
-                                        style="
-                                            word-break: break-word;
-                                            overflow-wrap: anywhere;
-                                        "
-                                        title="{{ related_song.genre }}"
-                                    >
+                                <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-10">
+                                    <span class="badge small px-3 py-1 rounded-pill card-genre-badge">
                                         {{ related_song.genre }}
-                                    </p>
-
+                                    </span>
+                                    <small class="text-muted">
+                                        Fav: {{ related_song.favorites_count }}
+                                    </small>
                                 </div>
 
-                            </article>
+                            </div>
 
-                        </a>
+                        </article>
 
                     </div>
 
                 {% empty %}
 
                     <div class="col-12">
-
-                        <p class="text-muted mb-0">
-                            No related songs found.
-                        </p>
-
+                        <div class="text-center py-4 bg-dark rounded-3 border border-secondary text-muted">
+                            No recommendations available yet.
+                        </div>
                     </div>
 
                 {% endfor %}

@@ -6,7 +6,7 @@
 <section class="songs-section">
     <div class="container">
 
-        <h1 class="mb-3">
+        <h1 class="mb-3 text-white fw-bold">
             My Uploads
         </h1>
 
@@ -18,49 +18,71 @@
 
             {% for song in songs %}
 
-                <div class="col-md-4">
+                <div class="col-sm-6 col-lg-4 col-xl-3">
 
-                    <a
-                        href="{% url 'song_detail' song.id %}"
-                        class="text-decoration-none text-white"
-                        aria-label="View {{ song.title }}"
+                    <article 
+                        class="music-card h-100 d-flex flex-column position-relative shadow-sm"
+                        data-audio-url="{{ song.audio_file.url }}"
+                        data-title="{{ song.title }}"
+                        data-artist="{{ song.artist }}"
+                        data-cover-url="{{ song.cover_image.url }}"
                     >
-                        <article class="music-card h-100">
 
+                        <!-- Cover Art Container with Top-Right Play Badge -->
+                        <div class="position-relative overflow-hidden">
                             <img
                                 src="{{ song.cover_image.url }}"
                                 alt="{{ song.title }} cover"
-                                class="img-fluid"
+                                class="img-fluid w-100 song-card-img"
                                 loading="lazy"
                             >
+                            <div class="position-absolute top-0 end-0 m-3 z-2">
+                                <span class="card-play-badge d-flex align-items-center justify-content-center rounded-circle shadow-lg"
+                                      style="width: 42px; height: 42px; background: rgba(15, 15, 15, 0.75); border: 2px solid #7c4dff; color: #ffffff; backdrop-filter: blur(4px);">
+                                    ▶
+                                </span>
+                            </div>
+                        </div>
 
-                            <div class="p-3">
+                        <!-- Card Body -->
+                        <div class="p-3 d-flex flex-column flex-grow-1">
 
-                                <h4>{{ song.title }}</h4>
+                            <a
+                                href="{% url 'song_detail' song.id %}"
+                                class="text-decoration-none text-white text-truncate mb-1 fw-bold fs-5 card-title-link"
+                                title="{{ song.title }}"
+                            >
+                                {{ song.title }}
+                            </a>
 
-                                <p>{{ song.genre }}</p>
+                            <p class="text-muted small text-truncate mb-3" title="{{ song.artist }}">
+                                By {{ song.artist }}
+                            </p>
 
+                            <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-10">
+                                <span class="badge small px-3 py-1 rounded-pill card-genre-badge">
+                                    {{ song.genre }}
+                                </span>
+                                <small class="text-muted">
+                                    Fav: {{ song.favorites_count }}
+                                </small>
                             </div>
 
-                        </article>
-                    </a>
+                        </div>
+
+                    </article>
 
                 </div>
 
             {% empty %}
 
-                <div class="col-12 text-center">
-
-                    <div class="auth-card">
-
-                        <h4>No uploads yet 🎵</h4>
-
+                <div class="col-12 text-center py-5">
+                    <div class="auth-card mx-auto p-5" style="max-width: 480px;">
+                        <h4 class="fw-bold mb-2 text-white">No uploads yet 🎵</h4>
                         <p class="text-muted mb-0">
-                            Upload your first track.
+                            Upload your first track to share with the community.
                         </p>
-
                     </div>
-
                 </div>
 
             {% endfor %}

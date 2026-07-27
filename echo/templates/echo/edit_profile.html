@@ -1,0 +1,77 @@
+{% extends "echo/base.html" %}
+
+{% block title %}Edit Profile | EchoVerse{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-card mx-auto" style="max-width: 600px;">
+        
+        <h2 class="text-center mb-4">Edit Profile</h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="mb-4">
+                    <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+                        {{ field.label }}
+                    </label>
+
+                    {% if field.name == 'avatar' %}
+                        {% if form.instance.avatar %}
+                            <div class="mb-3 d-flex align-items-center">
+                                <img 
+                                    src="{{ form.instance.avatar.url }}" 
+                                    alt="Current Avatar" 
+                                    class="rounded-circle shadow me-3" 
+                                    style="width: 70px; height: 70px; object-fit: cover;"
+                                >
+                                <div>
+                                    <small class="text-muted d-block">Current Profile Picture</small>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {{ field }}
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+
+                    {% if field.help_text %}
+                        <div class="form-text text-muted mt-1">
+                            {{ field.help_text }}
+                        </div>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                        <div class="text-danger mt-1 small">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Save Changes
+                </button>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'profile' user.id %}" class="text-decoration-none text-muted">
+                    Cancel
+                </a>
+            </div>
+            
+        </form>
+        
+    </div>
+</section>
+{% endblock %}

@@ -36,6 +36,9 @@
         href="{% static 'echo/css/style.css' %}"
     >
 
+    <!-- Hotwire Turbo for SPA-like navigation -->
+    <script src="https://unpkg.com/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
+
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -70,9 +73,12 @@
                     {% if user.is_authenticated %}
 
                         <li class="nav-item">
-                            <span class="nav-link">
+                            <a
+                                class="nav-link text-white fw-semibold"
+                                href="{% url 'profile' user.id %}"
+                            >
                                 Hello, {{ user.username }}
-                            </span>
+                            </a>
                         </li>
 
                         <li class="nav-item">
@@ -143,12 +149,68 @@
     <div
         id="toast-container"
         class="toast-container position-fixed top-0 end-0 p-3"
+        style="z-index: 1060;"
     ></div>
 
     <!-- Page Content -->
     <main>
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Persistent Global Audio Player -->
+    <div 
+        id="global-player-bar" 
+        data-turbo-permanent 
+        class="fixed-bottom p-3 d-none"
+        style="z-index: 1050; background-color: #0f0f0f; border-top: 1px solid #222222;"
+    >
+        <div class="container d-flex align-items-center justify-content-between">
+            <!-- Track Info -->
+            <div class="d-flex align-items-center overflow-hidden me-3" style="width: 270px;">
+                <img 
+                    id="global-player-cover" 
+                    src="" 
+                    alt="Cover" 
+                    class="img-thumbnail border-0 me-3 bg-secondary" 
+                    style="width: 50px; height: 50px; object-fit: cover;"
+                >
+                <div class="text-truncate flex-grow-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <h6 id="global-player-title" class="mb-0 text-white text-truncate fw-bold">Title</h6>
+                        <!-- Animated Equalizer Bars -->
+                        <div id="audio-equalizer" class="audio-equalizer d-none align-items-end gap-1 flex-shrink-0" style="height: 16px;">
+                            <span class="eq-bar"></span>
+                            <span class="eq-bar"></span>
+                            <span class="eq-bar"></span>
+                        </div>
+                    </div>
+                    <small id="global-player-artist" class="text-light opacity-75 text-truncate d-block">Artist</small>
+                </div>
+            </div>
+
+            <!-- Wrapped Dark Audio Controls Container -->
+            <div class="audio-player-wrapper flex-grow-1 mx-3 px-3 py-1 rounded-pill d-flex align-items-center" style="background-color: #1a1a1a; border: 1px solid #2a2a2a;">
+                <audio 
+                    id="global-audio-element" 
+                    controls 
+                    class="w-100 shadow-none"
+                    controlsList="nodownload"
+                >
+                    <source id="global-audio-source" src="" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+
+            <!-- Close Button -->
+            <button 
+                id="close-global-player" 
+                class="btn btn-sm btn-outline-secondary rounded-circle"
+                aria-label="Close player"
+            >
+                &times;
+            </button>
+        </div>
+    </div>
 
     <!-- Feature Scripts -->
     <script defer src="{% static 'echo/js/player.js' %}"></script>

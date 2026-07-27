@@ -28,6 +28,7 @@ urlpatterns = [
     ),
 
     # User
+    path("profile/edit/", views.edit_profile, name="edit_profile"),
     path("profile/<int:user_id>/", views.profile, name="profile"),
     path("my-uploads/", views.my_uploads, name="my_uploads"),
     path("my-favorites/", views.my_favorites, name="my_favorites"),

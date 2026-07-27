@@ -1,173 +1,271 @@
 {% extends "echo/base.html" %}
 
-{% block title %}Home | EchoVerse{% endblock %}
+{% block title %}Discover Royalty-Free Music | EchoVerse{% endblock %}
 
 {% block content %}
+<!-- Immersive Minimalist-Futuristic Hero Section -->
+<section class="hero-section position-relative overflow-hidden py-5 mb-4">
+    <!-- HTML5 Canvas Background Visualizer -->
+    <canvas id="visualizer-canvas" class="position-absolute top-0 start-0 w-100 h-100 pointer-events-none"></canvas>
 
-<!-- Hero Section -->
-<section class="hero-section">
-    <div class="container text-center">
+    <div class="container position-relative z-2 text-center py-4">
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
 
-        <h1 class="display-3 fw-bold">
-            Discover Royalty-Free Music
-        </h1>
+                <h1 class="display-4 fw-bold text-white mb-3 tracking-tight">
+                    Discover Royalty-Free Music
+                </h1>
 
-        <p class="lead mt-3">
-            Stream, upload, and explore immersive soundscapes.
-        </p>
+                <p class="text-muted mb-4 mx-auto fs-5" style="max-width: 580px;">
+                    Stream, upload, and explore immersive audio layers created by independent creators worldwide.
+                </p>
 
-        <form
-            id="search-form"
-            class="mt-4"
-            role="search"
-        >
-            <div class="d-flex justify-content-center">
-                <input
-                    id="search-input"
-                    type="search"
-                    class="form-control w-50"
-                    placeholder="Search tracks..."
-                    value="{{ search_query|default:'' }}"
-                    autocomplete="off"
-                    aria-label="Search songs"
-                >
+                <!-- Search Bar with Crisp Outline & Site-Wide Primary Button -->
+                <form method="get" action="{% url 'home' %}" class="search-form-wrapper mx-auto" style="max-width: 560px;">
+                    <div class="input-group input-group-lg rounded-pill p-1 shadow-lg search-bar-container">
+                        <input
+                            type="text"
+                            name="search"
+                            class="form-control bg-transparent border-0 text-white shadow-none ps-4 py-2"
+                            placeholder="Search catalog by title, artist, or vibe..."
+                            value="{{ search_query }}"
+                            autocomplete="off"
+                        >
+                        {% if selected_genre %}
+                            <input type="hidden" name="genre" value="{{ selected_genre }}">
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.05em;">
+                            Search
+                        </button>
+                    </div>
+                </form>
+
             </div>
-        </form>
-
-        <a
-            href="#trending"
-            class="btn btn-primary btn-lg mt-4"
-        >
-            Explore Music
-        </a>
+        </div>
 
     </div>
 </section>
 
-<section
-    id="trending"
-    class="songs-section"
->
+<!-- Main Feed Section -->
+<section class="songs-section pt-0">
     <div class="container">
 
-        <h2 class="section-title">
-            Trending Tracks
-        </h2>
+        <!-- Header & Genre Filters Row -->
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+            <div>
+                <h2 class="section-title fw-bold mb-1 text-white">
+                    {% if selected_genre %}
+                        {{ selected_genre }} Tracks
+                    {% elif search_query %}
+                        Search Results for "{{ search_query }}"
+                    {% else %}
+                        Trending Tracks
+                    {% endif %}
+                </h2>
+                <p class="text-muted mb-0">Fresh beats and community soundscapes</p>
+            </div>
 
-        <div
-            id="genre-filters"
-            class="genre-filters mb-4"
-            role="group"
-            aria-label="Filter songs by genre"
-        >
-
-            <button
-                type="button"
-                class="btn btn-sm btn-primary genre-filter active"
-                data-genre=""
-                aria-pressed="true"
-            >
-                All
-            </button>
-
-            {% for genre in genres %}
-                <button
-                    type="button"
-                    class="btn btn-sm btn-outline-light genre-filter"
-                    data-genre="{{ genre }}"
-                    aria-pressed="false"
-                    title="{{ genre }}"
+            <!-- Harmonized Genre Filter Pills -->
+            <div class="genre-filters d-flex flex-wrap gap-2">
+                <a
+                    href="{% url 'home' %}{% if search_query %}?search={{ search_query }}{% endif %}"
+                    class="btn btn-sm genre-filter-pill {% if not selected_genre %}active{% endif %} rounded-pill px-3 py-2"
                 >
-                    {{ genre }}
-                </button>
+                    All Genres
+                </a>
+
+                {% for genre in genres %}
+                    <a
+                        href="{% url 'home' %}?genre={{ genre }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                        class="btn btn-sm genre-filter-pill {% if selected_genre == genre %}active{% endif %} rounded-pill px-3 py-2"
+                    >
+                        {{ genre }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Songs Grid -->
+        <div class="row g-4" id="songs-grid">
+
+            {% for song in songs %}
+
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+
+                    <article 
+                        class="music-card h-100 d-flex flex-column position-relative shadow-sm"
+                        data-audio-url="{{ song.audio_file.url }}"
+                        data-title="{{ song.title }}"
+                        data-artist="{{ song.artist }}"
+                        data-cover-url="{{ song.cover_image.url }}"
+                    >
+
+                        <!-- Cover Art Container with Purple-Outlined Corner Badge -->
+                        <div class="position-relative overflow-hidden">
+                            <img
+                                src="{{ song.cover_image.url }}"
+                                alt="{{ song.title }} cover"
+                                class="img-fluid w-100 song-card-img"
+                                loading="lazy"
+                            >
+                            
+                            <!-- Top-Right Play/Pause Corner Badge -->
+                            <div class="position-absolute top-0 end-0 m-3 z-2">
+                                <span class="card-play-badge d-flex align-items-center justify-content-center rounded-circle shadow-lg"
+                                      style="width: 42px; height: 42px; background: rgba(15, 15, 15, 0.75); border: 2px solid #7c4dff; color: #ffffff; backdrop-filter: blur(4px);">
+                                    ▶
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+
+                            <a
+                                href="{% url 'song_detail' song.id %}"
+                                class="text-decoration-none text-white text-truncate mb-1 fw-bold fs-5 card-title-link"
+                                title="{{ song.title }}"
+                            >
+                                {{ song.title }}
+                            </a>
+
+                            <p class="text-muted small text-truncate mb-3" title="{{ song.artist }}">
+                                By {{ song.artist }}
+                            </p>
+
+                            <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-10">
+                                <span class="badge small px-3 py-1 rounded-pill card-genre-badge">
+                                    {{ song.genre }}
+                                </span>
+                                <small class="text-muted">
+                                    Fav: {{ song.favorites_count }}
+                                </small>
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            {% empty %}
+
+                <div class="col-12 text-center py-5">
+                    <div class="auth-card mx-auto p-5" style="max-width: 480px;">
+                        <h4 class="fw-bold mb-2 text-white">No tracks found</h4>
+                        <p class="text-muted mb-4">We couldn't find anything matching your search. Jump straight into popular genres instead:</p>
+                        
+                        <!-- Quick-Click Genre Pills -->
+                        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                            <a href="{% url 'home' %}?genre=Lo-Fi" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Lo-Fi</a>
+                            <a href="{% url 'home' %}?genre=Synthwave" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Synthwave</a>
+                            <a href="{% url 'home' %}?genre=Ambient" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Ambient</a>
+                        </div>
+
+                        <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">
+                            Reset Filters
+                        </a>
+                    </div>
+                </div>
+
             {% endfor %}
 
         </div>
 
-        <div
-            id="songs-container"
-            class="row g-4"
-        >
-
-            {% if songs %}
-
-                {% for song in songs %}
-
-                    <div class="col-md-4">
-
-                        <a
-                            href="{% url 'song_detail' song.id %}"
-                            class="text-decoration-none text-white"
-                            aria-label="View {{ song.title }}"
-                            title="{{ song.title }}"
-                        >
-                            <article class="music-card h-100">
-
-                                <img
-                                    src="{{ song.cover_image.url }}"
-                                    alt="{{ song.title }} cover"
-                                    class="img-fluid"
-                                    loading="lazy"
-                                >
-
-                                <div class="p-3">
-
-                                    <h4 title="{{ song.title }}">
-                                        {{ song.title }}
-                                    </h4>
-
-                                    <p
-                                        class="artist-name"
-                                        title="{{ song.artist }}"
-                                    >
-                                        {{ song.artist }}
-                                    </p>
-
-                                    <p
-                                        class="genre-name"
-                                        title="{{ song.genre }}"
-                                    >
-                                        {{ song.genre }}
-                                    </p>
-
-                                    <audio
-                                        controls
-                                        preload="metadata"
-                                        class="w-100"
-                                    >
-                                        <source
-                                            src="{{ song.audio_file.url }}"
-                                            type="audio/mpeg"
-                                        >
-                                        Your browser does not support the audio element.
-                                    </audio>
-
-                                </div>
-
-                            </article>
-                        </a>
-
-                    </div>
-
-                {% endfor %}
-
-            {% else %}
-
-                <div class="col-12 text-center py-5">
-
-                    <h3>No songs found 🎵</h3>
-
-                    <p class="text-muted">
-                        Try another search, choose a different genre, or upload some music.
-                    </p>
-
-                </div>
-
-            {% endif %}
-
-        </div>
-
     </div>
 </section>
+{% endblock %}
 
+<!-- Dedicated JavaScript Block with Smoothed Canvas Visualizer -->
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const canvas = document.getElementById("visualizer-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    let audioCtx = null;
+    let analyser = null;
+    let source = null;
+    let dataArray = null;
+
+    function setupAudioContext() {
+        const audioTag = document.getElementById("global-audio-element");
+        if (!audioTag) return;
+
+        if (!audioCtx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            try {
+                source = audioCtx.createMediaElementSource(audioTag);
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+            } catch (e) {}
+        }
+        if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+        }
+    }
+
+    document.addEventListener("click", () => {
+        setupAudioContext();
+    }, { once: true });
+
+    let wavePhase = 0;
+
+    function drawVisualizer() {
+        requestAnimationFrame(drawVisualizer);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const audioTag = document.getElementById("global-audio-element");
+        const isPlaying = audioTag && !audioTag.paused;
+
+        if (isPlaying && analyser && dataArray) {
+            analyser.getByteFrequencyData(dataArray);
+        }
+
+        const centerY = canvas.height / 2;
+        ctx.lineWidth = 2.5;
+
+        for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.strokeStyle = i === 0 ? "rgba(124, 77, 255, 0.65)" : (i === 1 ? "rgba(168, 85, 247, 0.45)" : (i === 2 ? "rgba(192, 132, 252, 0.3)" : "rgba(79, 70, 229, 0.2)"));
+            
+            let waveSpeed = 0.004 + (i * 0.0015);
+            wavePhase += waveSpeed;
+
+            for (let x = 0; x < canvas.width; x += 5) {
+                let waveHeight = Math.sin(x * 0.005 + wavePhase) * 22; 
+                
+                if (isPlaying && dataArray) {
+                    let freqIndex = Math.floor((x / canvas.width) * dataArray.length);
+                    let audioPower = dataArray[freqIndex] / 255.0;
+                    waveHeight *= (1 + (audioPower * 1.6)); 
+                } else {
+                    waveHeight *= 0.6;
+                }
+
+                let y = centerY + waveHeight + (i * 12 - 18);
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+    }
+
+    drawVisualizer();
+});
+</script>
 {% endblock %}
