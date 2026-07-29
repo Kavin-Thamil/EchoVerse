@@ -1,28 +1,28 @@
-# Virtual Environment
-venv/
-.venv/
-
-# Python
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Database
-db.sqlite3
+# Virtual environments
+venv/
+.venv/
 
-# Uploaded Media
-media/
-
-# Environment Variables
+# Environment variables
 .env
 
-# Static Files (generated during deployment)
+# Local database
+db.sqlite3
+
+# User uploaded files
+media/
+
+# Collected static files (production)
 staticfiles/
 
-# IDE
+# IDE settings
 .vscode/
 .idea/
 
-# OS Files
+# Operating system files
 .DS_Store
 Thumbs.db
