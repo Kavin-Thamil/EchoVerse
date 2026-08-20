@@ -7,10 +7,7 @@
     <div class="container">
 
         <!-- Modern Split Hero Section with Matching Theme Background -->
-        <div 
-            class="row align-items-center rounded-4 p-4 p-lg-5 shadow-lg mb-5"
-            style="background-color: #161616; border: 1px solid #222222;"
-        >
+        <div class="row align-items-center rounded-4 p-4 p-lg-5 shadow-lg mb-5" style="background-color: #161616; border: 1px solid #222222;">
             
             <!-- Cover Art Column -->
             <div class="col-lg-4 text-center mb-4 mb-lg-0">
@@ -26,14 +23,22 @@
             <!-- Song Info & Actions Column -->
             <div class="col-lg-8 ps-lg-4">
                 
-                <div class="mb-3">
-                    <span
-                        class="badge small px-3 py-2 rounded-pill card-genre-badge fs-6"
-                        style="word-break: break-word; overflow-wrap: anywhere;"
-                        title="{{ song.genre }}"
-                    >
-                        {{ song.genre }}
-                    </span>
+                <!-- Individual Dynamic Genre/Tag Pills -->
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for tag in song.genre.split %}
+                        {% with clean_tag=tag|cut:"," %}
+                            {% if clean_tag %}
+                                <a 
+                                    href="{% url 'home' %}?genre={{ clean_tag|urlencode }}" 
+                                    class="badge small px-3 py-2 rounded-pill card-genre-badge text-decoration-none fs-6"
+                                    style="word-break: break-word; overflow-wrap: anywhere;"
+                                    title="{{ clean_tag }}"
+                                >
+                                    {{ clean_tag|title }}
+                                </a>
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 </div>
 
                 <h1
@@ -173,8 +178,8 @@
                                 </p>
 
                                 <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-10">
-                                    <span class="badge small px-3 py-1 rounded-pill card-genre-badge">
-                                        {{ related_song.genre }}
+                                    <span class="badge small px-3 py-1 rounded-pill card-genre-badge text-truncate" style="max-width: 65%;" title="{{ related_song.genre }}">
+                                        {{ related_song.genre.split.0|cut:"," }}
                                     </span>
                                     <small class="text-muted">
                                         Fav: {{ related_song.favorites_count }}

@@ -104,8 +104,8 @@
                             </p>
 
                             <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-10">
-                                <span class="badge small px-3 py-1 rounded-pill card-genre-badge">
-                                    {{ song.genre }}
+                                <span class="badge small px-3 py-1 rounded-pill card-genre-badge text-truncate" style="max-width: 65%;" title="{{ song.genre }}">
+                                    {{ song.genre.split.0|cut:"," }}
                                 </span>
                                 <small class="text-muted">
                                     Fav: {{ song.favorites_count }}

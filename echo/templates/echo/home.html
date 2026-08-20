@@ -21,17 +21,29 @@
                     Stream, upload, and explore immersive audio layers created by independent creators worldwide.
                 </p>
 
-                <!-- Search Bar with Crisp Outline & Site-Wide Primary Button -->
+                <!-- Search Bar with Crisp Outline, Clear Button & Site-Wide Primary Button -->
                 <form method="get" action="{% url 'home' %}" class="search-form-wrapper mx-auto" style="max-width: 560px;">
-                    <div class="input-group input-group-lg rounded-pill p-1 shadow-lg search-bar-container">
+                    <div class="input-group input-group-lg rounded-pill p-1 shadow-lg search-bar-container position-relative">
                         <input
                             type="text"
+                            id="search-input"
                             name="search"
                             class="form-control bg-transparent border-0 text-white shadow-none ps-4 py-2"
                             placeholder="Search catalog by title, artist, or vibe..."
                             value="{{ search_query }}"
                             autocomplete="off"
                         >
+                        <!-- Clear Search Button -->
+                        <button
+                            type="button"
+                            id="clear-search-btn"
+                            class="btn text-muted p-0 me-2 align-self-center {% if not search_query %}d-none{% endif %}"
+                            aria-label="Clear search"
+                            style="background: none; border: none; font-size: 1.3rem; z-index: 5;"
+                        >
+                            &times;
+                        </button>
+
                         {% if selected_genre %}
                             <input type="hidden" name="genre" value="{{ selected_genre }}">
                         {% endif %}
@@ -51,7 +63,7 @@
 <section class="songs-section pt-0">
     <div class="container">
 
-        <!-- Header & Genre Filters Row -->
+        <!-- Header & Right-Aligned Pill-Shaped Genre Box Row -->
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
             <div>
                 <h2 class="section-title fw-bold mb-1 text-white">
@@ -66,28 +78,30 @@
                 <p class="text-muted mb-0">Fresh beats and community soundscapes</p>
             </div>
 
-            <!-- Harmonized Genre Filter Pills -->
-            <div class="genre-filters d-flex flex-wrap gap-2">
-                <a
-                    href="{% url 'home' %}{% if search_query %}?search={{ search_query }}{% endif %}"
-                    class="btn btn-sm genre-filter-pill {% if not selected_genre %}active{% endif %} rounded-pill px-3 py-2"
-                >
-                    All Genres
-                </a>
-
-                {% for genre in genres %}
+            <!-- Right-Aligned Pill-Shaped Scrolling Genre Box -->
+            <div class="genre-pill-box">
+                <div class="genre-scroll-container">
                     <a
-                        href="{% url 'home' %}?genre={{ genre }}{% if search_query %}&search={{ search_query }}{% endif %}"
-                        class="btn btn-sm genre-filter-pill {% if selected_genre == genre %}active{% endif %} rounded-pill px-3 py-2"
+                        href="{% url 'home' %}{% if search_query %}?search={{ search_query }}{% endif %}"
+                        class="btn btn-sm genre-filter-pill {% if not selected_genre %}active{% endif %} rounded-pill px-3 py-2"
                     >
-                        {{ genre }}
+                        All Genres
                     </a>
-                {% endfor %}
+
+                    {% for genre in genres %}
+                        <a
+                            href="{% url 'home' %}?genre={{ genre }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                            class="btn btn-sm genre-filter-pill {% if selected_genre == genre %}active{% endif %} rounded-pill px-3 py-2"
+                        >
+                            {{ genre }}
+                        </a>
+                    {% endfor %}
+                </div>
             </div>
         </div>
 
-        <!-- Songs Grid -->
-        <div class="row g-4" id="songs-grid">
+        <!-- Songs Grid (ID fixed for search.js hook) -->
+        <div class="row g-4" id="songs-container">
 
             {% for song in songs %}
 
@@ -113,7 +127,7 @@
                             <!-- Top-Right Play/Pause Corner Badge -->
                             <div class="position-absolute top-0 end-0 m-3 z-2">
                                 <span class="card-play-badge d-flex align-items-center justify-content-center rounded-circle shadow-lg"
-                                      style="width: 42px; height: 42px; background: rgba(15, 15, 15, 0.75); border: 2px solid #7c4dff; color: #ffffff; backdrop-filter: blur(4px);">
+                                    style="width: 42px; height: 42px; background: rgba(15, 15, 15, 0.75); border: 2px solid #7c4dff; color: #ffffff; backdrop-filter: blur(4px);">
                                     ▶
                                 </span>
                             </div>
@@ -135,8 +149,8 @@
                             </p>
 
                             <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-10">
-                                <span class="badge small px-3 py-1 rounded-pill card-genre-badge">
-                                    {{ song.genre }}
+                                <span class="badge small px-3 py-1 rounded-pill card-genre-badge text-truncate" style="max-width: 65%;" title="{{ song.genre }}">
+                                    {{ song.genre.split.0|cut:"," }}
                                 </span>
                                 <small class="text-muted">
                                     Fav: {{ song.favorites_count }}
@@ -154,13 +168,17 @@
                 <div class="col-12 text-center py-5">
                     <div class="auth-card mx-auto p-5" style="max-width: 480px;">
                         <h4 class="fw-bold mb-2 text-white">No tracks found</h4>
-                        <p class="text-muted mb-4">We couldn't find anything matching your search. Jump straight into popular genres instead:</p>
+                        <p class="text-muted mb-4">We couldn't find anything matching your search. Jump straight into available genres instead:</p>
                         
-                        <!-- Quick-Click Genre Pills -->
+                        <!-- Quick-Click Random Genre Pills -->
                         <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
-                            <a href="{% url 'home' %}?genre=Lo-Fi" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Lo-Fi</a>
-                            <a href="{% url 'home' %}?genre=Synthwave" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Synthwave</a>
-                            <a href="{% url 'home' %}?genre=Ambient" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Ambient</a>
+                            {% for genre in random_genres %}
+                                <a href="{% url 'home' %}?genre={{ genre }}" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">{{ genre }}</a>
+                            {% empty %}
+                                <a href="{% url 'home' %}?genre=Lo-Fi" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Lo-Fi</a>
+                                <a href="{% url 'home' %}?genre=Synthwave" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Synthwave</a>
+                                <a href="{% url 'home' %}?genre=Ambient" class="btn btn-sm genre-filter-pill rounded-pill px-3 py-1">Ambient</a>
+                            {% endfor %}
                         </div>
 
                         <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">
@@ -177,95 +195,134 @@
 </section>
 {% endblock %}
 
-<!-- Dedicated JavaScript Block with Smoothed Canvas Visualizer -->
+<!-- Dedicated JavaScript Block with Search Clear Handler & Smoothed Canvas Visualizer -->
 {% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const canvas = document.getElementById("visualizer-canvas");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+(function() {
+    function initHomeScripts() {
+        // Clear Search Input Logic
+        const searchInput = document.getElementById("search-input");
+        const clearSearchBtn = document.getElementById("clear-search-btn");
 
-    function resizeCanvas() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    let audioCtx = null;
-    let analyser = null;
-    let source = null;
-    let dataArray = null;
-
-    function setupAudioContext() {
-        const audioTag = document.getElementById("global-audio-element");
-        if (!audioTag) return;
-
-        if (!audioCtx) {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-            analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 256;
-            dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-            try {
-                source = audioCtx.createMediaElementSource(audioTag);
-                source.connect(analyser);
-                analyser.connect(audioCtx.destination);
-            } catch (e) {}
-        }
-        if (audioCtx.state === "suspended") {
-            audioCtx.resume();
-        }
-    }
-
-    document.addEventListener("click", () => {
-        setupAudioContext();
-    }, { once: true });
-
-    let wavePhase = 0;
-
-    function drawVisualizer() {
-        requestAnimationFrame(drawVisualizer);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const audioTag = document.getElementById("global-audio-element");
-        const isPlaying = audioTag && !audioTag.paused;
-
-        if (isPlaying && analyser && dataArray) {
-            analyser.getByteFrequencyData(dataArray);
-        }
-
-        const centerY = canvas.height / 2;
-        ctx.lineWidth = 2.5;
-
-        for (let i = 0; i < 4; i++) {
-            ctx.beginPath();
-            ctx.strokeStyle = i === 0 ? "rgba(124, 77, 255, 0.65)" : (i === 1 ? "rgba(168, 85, 247, 0.45)" : (i === 2 ? "rgba(192, 132, 252, 0.3)" : "rgba(79, 70, 229, 0.2)"));
+        if (searchInput && clearSearchBtn && !searchInput.dataset.homeInitialized) {
+            searchInput.dataset.homeInitialized = "true";
             
-            let waveSpeed = 0.004 + (i * 0.0015);
-            wavePhase += waveSpeed;
-
-            for (let x = 0; x < canvas.width; x += 5) {
-                let waveHeight = Math.sin(x * 0.005 + wavePhase) * 22; 
-                
-                if (isPlaying && dataArray) {
-                    let freqIndex = Math.floor((x / canvas.width) * dataArray.length);
-                    let audioPower = dataArray[freqIndex] / 255.0;
-                    waveHeight *= (1 + (audioPower * 1.6)); 
+            searchInput.addEventListener("input", () => {
+                if (searchInput.value.trim().length > 0) {
+                    clearSearchBtn.classList.remove("d-none");
                 } else {
-                    waveHeight *= 0.6;
+                    clearSearchBtn.classList.add("d-none");
                 }
+            });
 
-                let y = centerY + waveHeight + (i * 12 - 18);
-                if (x === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
+            clearSearchBtn.addEventListener("click", () => {
+                searchInput.value = "";
+                clearSearchBtn.classList.add("d-none");
+                searchInput.focus();
+                window.location.href = "{% url 'home' %}";
+            });
         }
+
+        // Canvas Visualizer Logic
+        const canvas = document.getElementById("visualizer-canvas");
+        if (!canvas || canvas.dataset.visInitialized) return;
+        canvas.dataset.visInitialized = "true";
+
+        const ctx = canvas.getContext("2d");
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        let audioCtx = null;
+        let analyser = null;
+        let source = null;
+        let dataArray = null;
+
+        function setupAudioContext() {
+            const audioTag = document.getElementById("global-audio-element");
+            if (!audioTag) return;
+
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                try {
+                    source = audioCtx.createMediaElementSource(audioTag);
+                    source.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                } catch (e) {
+                    // Audio node already connected if Turbo restored it, just catch silently.
+                }
+            }
+            if (audioCtx.state === "suspended") {
+                audioCtx.resume();
+            }
+        }
+
+        document.addEventListener("click", setupAudioContext, { once: true });
+
+        let wavePhase = 0;
+        let animationId;
+
+        function drawVisualizer() {
+            animationId = requestAnimationFrame(drawVisualizer);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const audioTag = document.getElementById("global-audio-element");
+            const isPlaying = audioTag && !audioTag.paused;
+
+            if (isPlaying && analyser && dataArray) {
+                analyser.getByteFrequencyData(dataArray);
+            }
+
+            const centerY = canvas.height / 2;
+            ctx.lineWidth = 2.5;
+
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.strokeStyle = i === 0 ? "rgba(124, 77, 255, 0.65)" : (i === 1 ? "rgba(168, 85, 247, 0.45)" : (i === 2 ? "rgba(192, 132, 252, 0.3)" : "rgba(79, 70, 229, 0.2)"));
+                
+                let waveSpeed = 0.004 + (i * 0.0015);
+                wavePhase += waveSpeed;
+
+                for (let x = 0; x < canvas.width; x += 5) {
+                    let waveHeight = Math.sin(x * 0.005 + wavePhase) * 22; 
+                    
+                    if (isPlaying && dataArray) {
+                        let freqIndex = Math.floor((x / canvas.width) * dataArray.length);
+                        let audioPower = dataArray[freqIndex] / 255.0;
+                        waveHeight *= (1 + (audioPower * 1.6)); 
+                    } else {
+                        waveHeight *= 0.6;
+                    }
+
+                    let y = centerY + waveHeight + (i * 12 - 18);
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        drawVisualizer();
+
+        // Cleanup: prevent runaway CPU leaks when leaving the page via Turbo
+        document.addEventListener("turbo:before-visit", function cleanup() {
+            cancelAnimationFrame(animationId);
+            window.removeEventListener("resize", resizeCanvas);
+            document.removeEventListener("turbo:before-visit", cleanup);
+        });
     }
 
-    drawVisualizer();
-});
+    document.addEventListener("DOMContentLoaded", initHomeScripts);
+    document.addEventListener("turbo:load", initHomeScripts);
+})();
 </script>
 {% endblock %}

@@ -1,95 +1,76 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const favoriteForm = document.getElementById("favorite-form");
+function initFavorite() {
+    const form = document.getElementById("favorite-form");
+    if (!form || form.dataset.initialized) return;
 
-    if (!favoriteForm) {
-        return;
-    }
+    form.dataset.initialized = "true";
 
-    const favoriteButton = document.getElementById("favorite-button");
-    const favoriteText = document.getElementById("favorite-text");
-    const favoriteCount = document.getElementById("favorite-count");
-    const csrfInput = favoriteForm.querySelector(
-        'input[name="csrfmiddlewaretoken"]'
-    );
+    const btn = document.getElementById("favorite-button");
+    const text = document.getElementById("favorite-text");
+    const count = document.getElementById("favorite-count");
+    const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
 
-    if (
-        !favoriteButton ||
-        !favoriteText ||
-        !favoriteCount ||
-        !csrfInput
-    ) {
-        console.error("Favorite form is missing required elements.");
+    if (!btn || !text || !count || !csrf) {
+        console.error("Favorite form missing elements");
         return;
     }
 
     let isSubmitting = false;
 
-    favoriteForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        if (isSubmitting) {
-            return;
-        }
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (isSubmitting) return;
 
         isSubmitting = true;
-        favoriteButton.disabled = true;
+        btn.disabled = true;
 
-        const originalButtonText = favoriteText.textContent;
-        favoriteText.textContent = "⏳ Updating...";
+        const originalText = text.textContent;
+        text.textContent = "⏳ Updating...";
 
         try {
-            const response = await fetch(favoriteForm.action, {
+            const res = await fetch(form.action, {
                 method: "POST",
                 headers: {
-                    "X-CSRFToken": csrfInput.value,
+                    "X-CSRFToken": csrf.value,
                     "X-Requested-With": "XMLHttpRequest",
                 },
             });
 
-            if (!response.ok) {
-                throw new Error(`Request failed with status ${response.status}.`);
-            }
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
+            const data = await res.json();
+            if (!data.success) throw new Error("Server rejected operation");
 
-            const data = await response.json();
-
-            if (!data.success) {
-                throw new Error("Server reported an unsuccessful operation.");
-            }
-
-            favoriteText.textContent = data.is_favorited
-                ? "❤️ Favorited"
-                : "🤍 Add to Favorites";
-
-            favoriteCount.textContent = data.favorites_count;
+            text.textContent = data.is_favorited ? "❤️ Favorited" : "🤍 Add to Favorites";
+            count.textContent = data.favorites_count;
 
             if (typeof window.showToast === "function") {
                 window.showToast({
                     title: "Favorites",
-                    message: data.is_favorited
-                        ? "Song added to your favorites."
-                        : "Song removed from your favorites.",
+                    message: data.is_favorited ? "Song added to favorites." : "Song removed from favorites.",
                     type: data.is_favorited ? "success" : "secondary",
                 });
             }
-
-            favoriteButton.blur();
-        } catch (error) {
-            console.error("Favorite update failed:", error);
-
-            favoriteText.textContent = originalButtonText;
-
+            btn.blur();
+            
+        } catch (err) {
+            console.error("Favorite toggle failed:", err);
+            text.textContent = originalText;
+            
             if (typeof window.showToast === "function") {
-                window.showToast({
-                    title: "Error",
-                    message: "Something went wrong. Please try again.",
-                    type: "danger",
+                window.showToast({ 
+                    title: "Error", 
+                    message: "Something went wrong. Try again.", 
+                    type: "danger" 
                 });
             } else {
-                alert("Something went wrong. Please try again.");
+                alert("Something went wrong. Try again.");
             }
         } finally {
             isSubmitting = false;
-            favoriteButton.disabled = false;
+            btn.disabled = false;
         }
     });
-});
+}
+
+document.addEventListener("DOMContentLoaded", initFavorite);
+document.addEventListener("turbo:load", initFavorite);

@@ -3,38 +3,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}EchoVerse{% endblock %}</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin
-    >
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap -->
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-        crossorigin="anonymous"
-    >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 
     <!-- Application Styles -->
-    <link
-        rel="stylesheet"
-        href="{% static 'echo/css/style.css' %}"
-    >
+    <link rel="stylesheet" href="{% static 'echo/css/style.css' %}">
 
     <!-- Hotwire Turbo for SPA-like navigation -->
     <script src="https://unpkg.com/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
@@ -47,169 +28,109 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark py-3">
         <div class="container">
-
             <a class="navbar-brand fw-bold" href="{% url 'home' %}">
                 EchoVerse
             </a>
 
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-            >
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div
-                class="collapse navbar-collapse"
-                id="navbarNav"
-            >
+            <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-
                     {% if user.is_authenticated %}
-
                         <li class="nav-item">
-                            <a
-                                class="nav-link text-white fw-semibold"
-                                href="{% url 'profile' user.id %}"
-                            >
+                            <a class="nav-link text-white fw-semibold" href="{% url 'profile' user.id %}">
                                 Hello, {{ user.username }}
                             </a>
                         </li>
-
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'upload_song' %}"
-                            >
-                                Upload
-                            </a>
+                            <a class="nav-link" href="{% url 'upload_song' %}">Upload</a>
                         </li>
-
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'my_uploads' %}"
-                            >
-                                My Uploads
-                            </a>
+                            <a class="nav-link" href="{% url 'my_uploads' %}">My Uploads</a>
                         </li>
-
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'my_favorites' %}"
-                            >
-                                Favorites
-                            </a>
+                            <a class="nav-link" href="{% url 'my_favorites' %}">Favorites</a>
                         </li>
-
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'logout' %}"
-                            >
-                                Logout
-                            </a>
+                            <form method="post" action="{% url 'logout' %}" class="m-0 p-0 d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link" style="background: transparent; border: none; padding: 8px 0; margin-left: 20px;">
+                                    Logout
+                                </button>
+                            </form>
                         </li>
-
                     {% else %}
-
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'login' %}"
-                            >
-                                Login
-                            </a>
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
                         </li>
-
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'register' %}"
-                            >
-                                Register
-                            </a>
+                            <a class="nav-link" href="{% url 'register' %}">Register</a>
                         </li>
-
                     {% endif %}
-
                 </ul>
             </div>
-
         </div>
     </nav>
 
     <!-- Toast Container -->
-    <div
-        id="toast-container"
-        class="toast-container position-fixed top-0 end-0 p-3"
-        style="z-index: 1060;"
-    ></div>
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1060;"></div>
 
     <!-- Page Content -->
     <main>
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Persistent Global Audio Player -->
-    <div 
-        id="global-player-bar" 
-        data-turbo-permanent 
-        class="fixed-bottom p-3 d-none"
-        style="z-index: 1050; background-color: #0f0f0f; border-top: 1px solid #222222;"
-    >
-        <div class="container d-flex align-items-center justify-content-between">
-            <!-- Track Info -->
-            <div class="d-flex align-items-center overflow-hidden me-3" style="width: 270px;">
-                <img 
-                    id="global-player-cover" 
-                    src="" 
-                    alt="Cover" 
-                    class="img-thumbnail border-0 me-3 bg-secondary" 
-                    style="width: 50px; height: 50px; object-fit: cover;"
-                >
+    <!-- Custom Modern Sticky Music Player Bar -->
+    <div id="sticky-music-player" class="music-player d-none" data-turbo-permanent>
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            
+            <!-- Left: Track Info (Cover Art, Title, Artist) -->
+            <div class="d-flex align-items-center gap-3" style="min-width: 220px; max-width: 300px;">
+                <img id="sticky-player-cover" src="" alt="Cover" class="rounded-3" style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #2a2a2a;">
                 <div class="text-truncate flex-grow-1">
                     <div class="d-flex align-items-center gap-2">
-                        <h6 id="global-player-title" class="mb-0 text-white text-truncate fw-bold">Title</h6>
-                        <!-- Animated Equalizer Bars -->
+                        <h6 id="sticky-player-title" class="text-white text-truncate mb-0 fs-6 fw-bold">Title</h6>
                         <div id="audio-equalizer" class="audio-equalizer d-none align-items-end gap-1 flex-shrink-0" style="height: 16px;">
                             <span class="eq-bar"></span>
                             <span class="eq-bar"></span>
                             <span class="eq-bar"></span>
                         </div>
                     </div>
-                    <small id="global-player-artist" class="text-light opacity-75 text-truncate d-block">Artist</small>
+                    <small id="sticky-player-artist" class="text-muted text-truncate d-block">Artist</small>
                 </div>
             </div>
 
-            <!-- Wrapped Dark Audio Controls Container -->
-            <div class="audio-player-wrapper flex-grow-1 mx-3 px-3 py-1 rounded-pill d-flex align-items-center" style="background-color: #1a1a1a; border: 1px solid #2a2a2a;">
-                <audio 
-                    id="global-audio-element" 
-                    controls 
-                    class="w-100 shadow-none"
-                    controlsList="nodownload"
-                >
-                    <source id="global-audio-source" src="" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
+            <!-- Center: Play/Pause Controls & Seek Bar Timeline -->
+            <div class="d-flex flex-column align-items-center flex-grow-1 px-4">
+                <div class="player-controls-group mb-2">
+                    <button id="sticky-play-pause-btn" class="player-main-btn" aria-label="Play/Pause">⏸</button>
+                </div>
+
+                <div class="player-progress-container w-100">
+                    <span id="current-time" class="player-time-display">0:00</span>
+                    <input type="range" id="seek-slider" class="player-seek-slider" value="0" min="0" max="100" step="0.1">
+                    <span id="total-duration" class="player-time-display">0:00</span>
+                </div>
             </div>
 
-            <!-- Close Button -->
-            <button 
-                id="close-global-player" 
-                class="btn btn-sm btn-outline-secondary rounded-circle"
-                aria-label="Close player"
-            >
-                &times;
-            </button>
+            <!-- Right: Volume & Close Player Button -->
+            <div class="d-flex align-items-center gap-4" style="min-width: 180px; justify-content: flex-end;">
+                <div class="d-none d-md-flex align-items-center gap-2">
+                    <span class="text-muted fs-6">🔊</span>
+                    <input type="range" id="volume-slider" class="player-volume-slider" value="1" min="0" max="1" step="0.05">
+                </div>
+
+                <button id="close-player-btn" class="btn btn-sm text-muted p-0" title="Close Player" style="background: none; border: none; font-size: 1.2rem;">
+                    &times;
+                </button>
+            </div>
+
         </div>
+
+        <!-- Hidden standard audio engine tag -->
+        <audio id="global-audio-element" preload="auto"></audio>
     </div>
 
     <!-- Feature Scripts -->
@@ -219,11 +140,7 @@
     <script defer src="{% static 'echo/js/toast.js' %}"></script>
 
     <!-- Bootstrap -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-        crossorigin="anonymous"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
     {% block extra_js %}{% endblock %}
 

@@ -1,11 +1,3 @@
-"""
-URL configuration for echoverse project.
-
-The `urlpatterns` list routes URLs to views.
-For more information, see:
-https://docs.djangoproject.com/en/6.0/topics/http/urls/
-"""
-
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin

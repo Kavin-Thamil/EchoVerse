@@ -1,3 +1,4 @@
+import random
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -6,6 +7,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from .forms import RegisterForm, SongForm, UserProfileForm
 from .models import Song, UserProfile
@@ -13,16 +15,18 @@ from .models import Song, UserProfile
 
 def _filter_songs(search_query="", genre=""):
     """Return a filtered queryset of songs."""
-
-    songs = Song.objects.select_related("uploaded_by")
+    
+    # Added prefetch_related to prevent N+1 query hammering for favorites_count[cite: 5]
+    songs = Song.objects.select_related("uploaded_by").prefetch_related("favorites")
 
     if genre:
-        songs = songs.filter(genre__iexact=genre)
+        songs = songs.filter(genre__icontains=genre)
 
     if search_query:
         songs = songs.filter(
             Q(title__icontains=search_query)
             | Q(artist__icontains=search_query)
+            | Q(genre__icontains=search_query)
         )
 
     return songs
@@ -30,7 +34,6 @@ def _filter_songs(search_query="", genre=""):
 
 def home(request):
     """Display the homepage."""
-
     selected_genre = request.GET.get("genre", "").strip()
     search_query = request.GET.get("search", "").strip()
 
@@ -39,11 +42,17 @@ def home(request):
         genre=selected_genre,
     )
 
-    genres = (
-        Song.objects.order_by("genre")
-        .values_list("genre", flat=True)
-        .distinct()
-    )
+    raw_genres = Song.objects.values_list("genre", flat=True)
+    genres_set = set()
+    for item in raw_genres:
+        if item:
+            for tag in item.split(","):
+                cleaned_tag = tag.strip()
+                if cleaned_tag:
+                    genres_set.add(cleaned_tag)
+    
+    genres = sorted(list(genres_set))
+    random_genres = random.sample(genres, min(len(genres), 3)) if genres else []
 
     return render(
         request,
@@ -51,6 +60,7 @@ def home(request):
         {
             "songs": songs,
             "genres": genres,
+            "random_genres": random_genres,
             "selected_genre": selected_genre,
             "search_query": search_query,
         },
@@ -59,7 +69,6 @@ def home(request):
 
 def search_songs(request):
     """Return filtered songs as JSON."""
-
     search_query = request.GET.get("search", "").strip()
     selected_genre = request.GET.get("genre", "").strip()
 
@@ -78,6 +87,7 @@ def search_songs(request):
                     "genre": song.genre,
                     "cover_image": song.cover_image.url,
                     "audio_file": song.audio_file.url,
+                    "favorites_count": song.favorites_count,  # Fixed missing data payload[cite: 5]
                 }
                 for song in songs
             ]
@@ -87,14 +97,18 @@ def search_songs(request):
 
 @login_required
 def upload_song(request):
-    """Upload a new song."""
-
+    """Upload a new song with support for multiple comma-separated genres."""
     if request.method == "POST":
         form = SongForm(request.POST, request.FILES)
 
         if form.is_valid():
             song = form.save(commit=False)
             song.uploaded_by = request.user
+            
+            raw_genre = form.cleaned_data.get("genre", "")
+            cleaned_genres = ", ".join([t.strip().title() for t in raw_genre.split(",") if t.strip()])
+            song.genre = cleaned_genres
+            
             song.save()
             messages.success(request, "Song uploaded successfully!")
             return redirect("home")
@@ -103,14 +117,13 @@ def upload_song(request):
 
     return render(
         request,
-        "echo/upload.html",
+        "echo/upload_song.html",
         {"form": form},
     )
 
 
 def register(request):
     """Register a new user."""
-
     if request.user.is_authenticated:
         return redirect("home")
 
@@ -133,7 +146,6 @@ def register(request):
 
 def user_login(request):
     """Authenticate and log in a user."""
-
     if request.user.is_authenticated:
         return redirect("home")
 
@@ -155,9 +167,9 @@ def user_login(request):
 
 
 @login_required
+@require_POST
 def user_logout(request):
     """Log out the current user."""
-
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect("home")
@@ -165,20 +177,18 @@ def user_logout(request):
 
 def song_detail(request, song_id):
     """Display a song and related songs with smart recommendations fallback."""
-
     song = get_object_or_404(
         Song.objects.select_related("uploaded_by").prefetch_related("favorites"),
         pk=song_id,
     )
 
-    # 1. Try finding songs in the same genre first
+    primary_tag = song.genre.split(",")[0].strip() if song.genre else ""
     related_songs = list(
-        Song.objects.filter(genre=song.genre)
+        Song.objects.filter(genre__icontains=primary_tag)
         .exclude(pk=song.pk)
         .select_related("uploaded_by")[:3]
     )
 
-    # 2. If we have fewer than 3, fallback to recent platform tracks to fill the recommendation slots
     if len(related_songs) < 3:
         needed = 3 - len(related_songs)
         exclude_ids = [song.pk] + [s.pk for s in related_songs]
@@ -198,11 +208,10 @@ def song_detail(request, song_id):
         },
     )
 
+
 def profile(request, user_id):
     """Display a user's public profile."""
-
     profile_user = get_object_or_404(User, pk=user_id)
-
     user_songs = (
         Song.objects.filter(uploaded_by=profile_user)
         .select_related("uploaded_by")
@@ -221,7 +230,6 @@ def profile(request, user_id):
 @login_required
 def edit_profile(request):
     """Edit the current user's profile."""
-
     profile, created = UserProfile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
@@ -244,16 +252,10 @@ def edit_profile(request):
 @login_required
 def delete_song(request, song_id):
     """Delete one of the current user's songs."""
-
-    song = get_object_or_404(
-        Song,
-        pk=song_id,
-    )
+    song = get_object_or_404(Song, pk=song_id)
 
     if song.uploaded_by != request.user:
-        return HttpResponseForbidden(
-            "You cannot delete this song."
-        )
+        return HttpResponseForbidden("You cannot delete this song.")
 
     if request.method == "POST":
         song.delete()
@@ -268,34 +270,9 @@ def delete_song(request, song_id):
 
 
 @login_required
-def my_uploads(request):
-    """Display the current user's uploaded songs."""
-
-    songs = (
-        Song.objects.filter(uploaded_by=request.user)
-        .select_related("uploaded_by")
-    )
-
-    return render(
-        request,
-        "echo/my_uploads.html",
-        {"songs": songs},
-    )
-
-
-@login_required
+@require_POST
 def toggle_favorite(request, song_id):
     """Toggle a song as a favorite."""
-
-    if request.method != "POST":
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Method not allowed.",
-            },
-            status=405,
-        )
-
     song = get_object_or_404(
         Song.objects.prefetch_related("favorites"),
         pk=song_id,
@@ -320,7 +297,6 @@ def toggle_favorite(request, song_id):
 @login_required
 def my_favorites(request):
     """Display the current user's favorite songs."""
-
     songs = (
         request.user.favorite_songs.select_related("uploaded_by")
         .all()
@@ -329,5 +305,20 @@ def my_favorites(request):
     return render(
         request,
         "echo/my_favorites.html",
+        {"songs": songs},
+    )
+
+
+@login_required
+def my_uploads(request):
+    """Display the current user's uploaded songs."""
+    songs = (
+        Song.objects.filter(uploaded_by=request.user)
+        .select_related("uploaded_by")
+    )
+
+    return render(
+        request,
+        "echo/my_uploads.html",
         {"songs": songs},
     )

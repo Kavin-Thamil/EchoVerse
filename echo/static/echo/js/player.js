@@ -1,29 +1,23 @@
-/**
- * Global Audio Player Controller
- * Handles card-wide clicks, explicit play buttons, spacebar shortcut, equalizer animation, and Turbo navigation.
- */
+// Global Audio Player Controller
 
 document.addEventListener("click", function(e) {
     const card = e.target.closest(".music-card");
     const playBtn = e.target.closest(".play-btn");
-    
     const triggerEl = card || playBtn;
     
     if (triggerEl) {
-        if (e.target.closest(".card-title-link")) {
-            return;
-        }
+        if (e.target.closest(".card-title-link")) return;
 
         e.preventDefault();
 
-        const globalPlayerBar = document.getElementById("global-player-bar");
-        const globalAudio = document.getElementById("global-audio-element");
-        const globalSource = document.getElementById("global-audio-source");
-        const coverImg = document.getElementById("global-player-cover");
-        const titleEl = document.getElementById("global-player-title");
-        const artistEl = document.getElementById("global-player-artist");
+        const playerBar = document.getElementById("sticky-music-player");
+        const audio = document.getElementById("global-audio-element");
+        const playPauseBtn = document.getElementById("sticky-play-pause-btn");
+        const coverImg = document.getElementById("sticky-player-cover");
+        const titleEl = document.getElementById("sticky-player-title");
+        const artistEl = document.getElementById("sticky-player-artist");
 
-        if (!globalPlayerBar) return;
+        if (!playerBar || !audio) return;
 
         const audioUrl = triggerEl.getAttribute("data-audio-url");
         const title = triggerEl.getAttribute("data-title");
@@ -32,104 +26,206 @@ document.addEventListener("click", function(e) {
 
         if (!audioUrl) return;
 
-        const currentPath = globalSource.src ? new URL(globalSource.src, window.location.origin).pathname : "";
-        const targetPath = new URL(audioUrl, window.location.origin).pathname;
+        const currentSrc = audio.dataset.originalSrc || "";
 
-        if (currentPath === targetPath && currentPath !== "") {
-            if (globalAudio.paused) {
-                globalAudio.play().catch(error => console.error("Playback failed:", error));
+        // Toggle play/pause if clicking the same song
+        if (currentSrc === audioUrl) {
+            if (audio.paused) {
+                audio.play().catch(err => console.error("Playback failed:", err));
+                if (playPauseBtn) playPauseBtn.textContent = "⏸";
             } else {
-                globalAudio.pause();
+                audio.pause();
+                if (playPauseBtn) playPauseBtn.textContent = "▶";
             }
-            updateCardStates();
+            updatePlayerState();
             return;
         }
 
-        titleEl.textContent = title;
-        artistEl.textContent = artist;
-        coverImg.src = coverUrl;
+        // Load new song data
+        if (titleEl) titleEl.textContent = title;
+        if (artistEl) artistEl.textContent = artist;
+        if (coverImg) coverImg.src = coverUrl;
 
-        globalSource.src = audioUrl;
-        globalAudio.load();
+        playerBar.classList.remove("d-none");
+        if (playPauseBtn) playPauseBtn.textContent = "⏳";
         
-        globalPlayerBar.classList.remove("d-none");
-        globalPlayerBar.classList.add("d-block");
+        audio.dataset.originalSrc = audioUrl;
 
-        globalAudio.play().catch(error => {
-            console.error("Audio playback failed:", error);
-        });
+        // Fetch as Blob to bypass Django runserver's lack of HTTP Range support (fixes seeking)
+        fetch(audioUrl)
+            .then(res => res.blob())
+            .then(blob => {
+                // Bail if user clicked another song while downloading
+                if (audio.dataset.originalSrc !== audioUrl) return;
+
+                audio.src = URL.createObjectURL(blob);
+                audio.load();
+                audio.play().then(() => {
+                    if (playPauseBtn) playPauseBtn.textContent = "⏸";
+                    updatePlayerState();
+                }).catch(err => console.error("Playback failed:", err));
+            })
+            .catch(err => {
+                console.error("Blob fetch failed, falling back to stream:", err);
+                audio.src = audioUrl;
+                audio.load();
+                audio.play();
+            });
         
-        updateCardStates();
+        updatePlayerState();
         return;
     }
 
-    const closeBtn = e.target.closest("#close-global-player");
+    // Handle closing the player
+    const closeBtn = e.target.closest("#close-player-btn");
     if (closeBtn) {
-        const globalPlayerBar = document.getElementById("global-player-bar");
-        const globalAudio = document.getElementById("global-audio-element");
-        const globalSource = document.getElementById("global-audio-source");
+        const playerBar = document.getElementById("sticky-music-player");
+        const audio = document.getElementById("global-audio-element");
 
-        if (globalAudio) {
-            globalAudio.pause();
-            globalSource.src = "";
+        if (audio) {
+            audio.pause();
+            audio.src = "";
+            audio.dataset.originalSrc = "";
         }
         
-        if (globalPlayerBar) {
-            globalPlayerBar.classList.add("d-none");
+        if (playerBar) {
+            playerBar.classList.add("d-none");
         }
 
-        updateCardStates();
+        updatePlayerState();
     }
 });
 
-// Global Spacebar Shortcut for Play/Pause
+function updateSliderFill(slider) {
+    if (!slider) return;
+    const value = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.background = `linear-gradient(to right, #7c4dff ${value}%, #2a2a2a ${value}%)`;
+}
+
+function initAudioPlayer() {
+    const audio = document.getElementById("global-audio-element");
+    const playPauseBtn = document.getElementById("sticky-play-pause-btn");
+    const seekSlider = document.getElementById("seek-slider");
+    const volumeSlider = document.getElementById("volume-slider");
+    const currentTimeEl = document.getElementById("current-time");
+    const totalDurationEl = document.getElementById("total-duration");
+
+    if (!audio) return;
+
+    let isDragging = false;
+
+    function formatTime(seconds) {
+        if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    if (playPauseBtn) {
+        playPauseBtn.onclick = () => {
+            if (audio.paused) {
+                audio.play().catch(err => console.log(err));
+            } else {
+                audio.pause();
+            }
+        };
+    }
+
+    audio.ontimeupdate = () => {
+        if (!isNaN(audio.duration) && isFinite(audio.duration) && seekSlider && !isDragging) {
+            const progressPercent = (audio.currentTime / audio.duration) * 100;
+            seekSlider.value = progressPercent;
+            updateSliderFill(seekSlider);
+            if (currentTimeEl) currentTimeEl.textContent = formatTime(audio.currentTime);
+            if (totalDurationEl) totalDurationEl.textContent = formatTime(audio.duration);
+        }
+    };
+
+    audio.onloadedmetadata = () => {
+        if (totalDurationEl && isFinite(audio.duration)) {
+            totalDurationEl.textContent = formatTime(audio.duration);
+        }
+        if (volumeSlider) updateSliderFill(volumeSlider);
+    };
+
+    if (seekSlider) {
+        seekSlider.oninput = () => {
+            isDragging = true;
+            if (!isNaN(audio.duration) && isFinite(audio.duration)) {
+                const seekTime = (seekSlider.value / 100) * audio.duration;
+                if (currentTimeEl) currentTimeEl.textContent = formatTime(seekTime);
+                updateSliderFill(seekSlider);
+            }
+        };
+
+        seekSlider.onchange = () => {
+            if (!isNaN(audio.duration) && isFinite(audio.duration)) {
+                audio.currentTime = (seekSlider.value / 100) * audio.duration;
+            }
+            // Small delay so slider doesn't bounce back while audio seeks
+            setTimeout(() => {
+                isDragging = false;
+            }, 50);
+        };
+    }
+
+    if (volumeSlider) {
+        updateSliderFill(volumeSlider);
+        volumeSlider.oninput = () => {
+            audio.volume = volumeSlider.value;
+            updateSliderFill(volumeSlider);
+        };
+    }
+
+    audio.onplay = () => {
+        if (playPauseBtn) playPauseBtn.textContent = "⏸";
+        updatePlayerState();
+    };
+
+    audio.onpause = () => {
+        if (playPauseBtn) playPauseBtn.textContent = "▶";
+        updatePlayerState();
+    };
+
+    audio.onended = () => {
+        if (playPauseBtn) playPauseBtn.textContent = "▶";
+        updatePlayerState();
+    };
+}
+
+// Spacebar play/pause shortcut
 document.addEventListener("keydown", function(e) {
     if (e.code === "Space") {
         const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
-        if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") {
-            return;
-        }
+        if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") return;
 
-        const globalAudio = document.getElementById("global-audio-element");
-        const globalPlayerBar = document.getElementById("global-player-bar");
+        const audio = document.getElementById("global-audio-element");
+        const playerBar = document.getElementById("sticky-music-player");
 
-        if (globalAudio && globalPlayerBar && !globalPlayerBar.classList.contains("d-none")) {
+        if (audio && playerBar && !playerBar.classList.contains("d-none")) {
             e.preventDefault();
-            if (globalAudio.paused) {
-                globalAudio.play().catch(err => console.log(err));
-            } else {
-                globalAudio.pause();
-            }
+            audio.paused ? audio.play().catch(err => console.log(err)) : audio.pause();
         }
     }
 });
 
-document.addEventListener("DOMContentLoaded", initCardStateSync);
-document.addEventListener("turbo:load", initCardStateSync);
+document.addEventListener("DOMContentLoaded", () => {
+    initAudioPlayer();
+    updatePlayerState();
+});
 
-function initCardStateSync() {
-    const globalAudio = document.getElementById("global-audio-element");
-    if (!globalAudio) return;
+document.addEventListener("turbo:load", () => {
+    initAudioPlayer();
+    updatePlayerState();
+});
 
-    globalAudio.removeEventListener("play", updateCardStates);
-    globalAudio.removeEventListener("pause", updateCardStates);
-    globalAudio.removeEventListener("ended", updateCardStates);
-
-    globalAudio.addEventListener("play", updateCardStates);
-    globalAudio.addEventListener("pause", updateCardStates);
-    globalAudio.addEventListener("ended", updateCardStates);
-
-    updateCardStates();
-}
-
-function updateCardStates() {
-    const globalSource = document.getElementById("global-audio-source");
-    const globalAudio = document.getElementById("global-audio-element");
+function updatePlayerState() {
+    const audio = document.getElementById("global-audio-element");
     const equalizer = document.getElementById("audio-equalizer");
-    if (!globalAudio) return;
+    if (!audio) return;
 
-    const currentSrc = globalSource ? globalSource.src : "";
-    const isPlaying = !globalAudio.paused && currentSrc !== "";
+    const originalSrc = audio.dataset.originalSrc || "";
+    const isPlaying = !audio.paused && audio.src !== "";
 
     if (equalizer) {
         if (isPlaying) {
@@ -141,15 +237,13 @@ function updateCardStates() {
         }
     }
 
+    // Sync play/pause icons on all music cards
     document.querySelectorAll(".music-card").forEach((card) => {
         const cardUrl = card.getAttribute("data-audio-url");
         const badge = card.querySelector(".card-play-badge");
         if (!cardUrl || !badge) return;
 
-        const cardPath = new URL(cardUrl, window.location.origin).pathname;
-        const activePath = currentSrc ? new URL(currentSrc, window.location.origin).pathname : "";
-
-        if (activePath === cardPath && isPlaying) {
+        if (originalSrc === cardUrl && isPlaying) {
             badge.textContent = "⏸";
             card.classList.add("isPlaying-card");
         } else {

@@ -20,17 +20,11 @@
         <form method="post" class="d-inline">
             {% csrf_token %}
 
-            <button
-                type="submit"
-                class="btn btn-danger me-2"
-            >
+            <button type="submit" class="btn btn-danger me-2">
                 Delete
             </button>
 
-            <a
-                href="{% url 'song_detail' song.id %}"
-                class="btn btn-outline-light"
-            >
+            <a href="{% url 'song_detail' song.id %}" class="btn btn-outline-light">
                 Cancel
             </a>
         </form>
